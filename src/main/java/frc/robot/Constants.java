@@ -4,6 +4,15 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -15,5 +24,17 @@ package frc.robot;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+  }
+
+  public static class VisionConstants {
+    public static final String LEFT_TURRET_CAMERA = "";
+    public static final String RIGHT_TURRET_CAMERA = "";
+    public static final String LEFT_ROBOT_CAMERA = "";
+    public static final String RIGHT_ROBOT_CAMERA = "";
+
+    public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(null);
+
+    public static final double AMBIGUITY_CUTOFF = 0.1;
+    public static final double TAG_CUTOFF_DISTANCE = 0.0;
   }
 }
