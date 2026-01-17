@@ -51,5 +51,11 @@ public final class Constants {
 
     public static final double[] DRIVE_PIDF_VALUES = {0.0, 0.0, 0.0, 0.0};
     public static final double[] ROTATE_PID_VALUES = {0.0, 0.0, 0.0};
+
+    public static final double MAX_DRIVE_SPEED = 0;
+    public static final double MAX_ROTATE_SPEED = 0;
+
+    public static final double MIN_DRIVE_SPEED = 0;
+    public static final double MIN_ROTATE_SPPEED = 0;
   }
 }

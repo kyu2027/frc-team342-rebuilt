@@ -116,6 +116,11 @@ public class SwereModule {
         rotateController.setSetpoint(state.angle.getRadians(), ControlType.kPosition);
     }
 
+    public void stop(){
+        driveMotor.set(0);
+        rotateMotor.set(0);
+    }
+
     /**Returns the position of the swere module (distance traveled in meters and module angle in radians) */
     public SwerveModulePosition getPosition(){
         return new SwerveModulePosition(
@@ -158,6 +163,10 @@ public class SwereModule {
 
     /**returns the raw offset of the module */
     public double getRawOffset(){
-        return rotateCANcoder.getAbsolutePosition().getValueAsDouble();
+        return rotateCANcoder.getAbsolutePosition().getValueAsDouble() * (2 * Math.PI);
+    }
+
+    public String getLabel(){
+        return label;
     }
 }
