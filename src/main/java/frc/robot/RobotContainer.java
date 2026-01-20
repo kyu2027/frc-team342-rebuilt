@@ -8,6 +8,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.PhotonVision;
 import frc.robot.subsystems.SwereDrive;
 import frc.robot.subsystems.Turret;
 import edu.wpi.first.wpilibj.Joystick;
@@ -45,8 +46,12 @@ public class RobotContainer {
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
+  private final PhotonVision photonVision;
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    photonVision = new PhotonVision();
+
     swere = new SwereDrive();
     turret = new Turret();
 
