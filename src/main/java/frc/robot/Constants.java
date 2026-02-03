@@ -29,8 +29,8 @@ public final class Constants {
 
   public static class VisionConstants {
     //Add pipeline names later when all cameras are set up; grab from 10.3.42.11:5800
-    public static final String LEFT_TURRET_CAMERA = "";
-    public static final String RIGHT_TURRET_CAMERA = "";
+    public static final String LEFT_TURRET_CAMERA = "Photon_Vision_Turret_Left";
+    public static final String RIGHT_TURRET_CAMERA = "Photon_Vision_Turret_Right";
     public static final String LEFT_ROBOT_CAMERA = "";
     public static final String RIGHT_ROBOT_CAMERA = "";
 
@@ -38,7 +38,7 @@ public final class Constants {
 
     //Change these values after testing
     public static final double AMBIGUITY_CUTOFF = 0.1;
-    public static final double TAG_CUTOFF_DISTANCE = 0.0;
+    public static final double TAG_CUTOFF_DISTANCE = 5.0;
 
     //Get all these values after cameras are put on robot
     public static final Translation3d LEFT_TURRET_CAMERA_TRANSLATION_3D = new Translation3d(0, 0, 0);
