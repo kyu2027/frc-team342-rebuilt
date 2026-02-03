@@ -9,14 +9,14 @@ public class AprilTagIDs {
 
     //Holds all IDs for the hub
     public enum hubTagsIDs {
-        FRONT_CENTER(0, 0),
-        FRONT_OFFSET(0, 0),
-        RIGHT_CENTER(0, 0),
-        RIGHT_OFFSET(0, 0),
-        LEFT_CENTER(0, 0),
-        LEFT_OFFSET(0, 0),
-        BACK_CENTER(0, 0),
-        BACK_OFFSET(0, 0);
+        FRONT_CENTER(25, 9),
+        FRONT_OFFSET(26, 10),
+        RIGHT_CENTER(27, 11),
+        RIGHT_OFFSET(18, 2),
+        LEFT_CENTER(21, 5),
+        LEFT_OFFSET(24, 8),
+        BACK_CENTER(19, 3),
+        BACK_OFFSET(20, 4);
 
         private int blueHubTagID;
         private int redHubTagID;
@@ -39,8 +39,8 @@ public class AprilTagIDs {
 
     //Holds all IDs for the outpost
     public enum outpostTagsIDs {
-        CENTER(0, 0),
-        OFFSET(0, 0);
+        CENTER(29, 13),
+        OFFSET(30, 14);
 
         private int blueOutpostTagID;
         private int redOutpostTagID;
@@ -63,8 +63,8 @@ public class AprilTagIDs {
 
     //Holds all IDs for the tower
     public enum towerTagsIDs {
-        CENTER(0, 0),
-        OFFSET(0, 0);
+        CENTER(31, 15),
+        OFFSET(32, 16);
 
         private int blueTowerTagID;
         private int redTowerTagID;
