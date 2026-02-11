@@ -7,10 +7,12 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.MoveWristWithJoystick;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.PhotonVision;
 import frc.robot.subsystems.SwereDrive;
 import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Intake;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.CustomXboxController;
@@ -33,6 +35,7 @@ public class RobotContainer {
   private final SwereDrive swere;
   private final Turret turret;
   private final PhotonVision photonVision;
+  private final Intake intake;
 
   private final CustomXboxController driver;
   private final CustomXboxController operator;
@@ -40,9 +43,13 @@ public class RobotContainer {
   private final JoystickButton fieldOrientedButton;
   private final JoystickButton turretToggleButton;
 
+  private final MoveWristWithJoystick moveWristWithJoystick;
+
   private final Command toggleFieldOriented;
   private final Command turretToAngle;
   private final Command toggleManualTurret;
+  private final Command intakeFuel;
+  private final Command getFuelUnstuck;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -51,9 +58,9 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     photonVision = new PhotonVision();
-
     swere = new SwereDrive();
     turret = new Turret();
+    intake = new Intake();
 
     driver = new CustomXboxController(0);
     operator = new CustomXboxController(1);
@@ -61,12 +68,17 @@ public class RobotContainer {
     toggleFieldOriented = Commands.runOnce(() -> {swere.toggleFieldOriented();}, swere);
     toggleManualTurret = Commands.runOnce(() -> {turret.toggleManual();}, turret);
     turretToAngle = Commands.run(() -> {turret.turretToAngle(0, operator);});
+    intakeFuel = Commands.run(() -> {intake.spinIntake(0);}, intake);
+    getFuelUnstuck = Commands.run(() -> {intake.spinIntake(0);}, intake);
+
+    moveWristWithJoystick = new MoveWristWithJoystick(intake, operator);
 
     fieldOrientedButton = new JoystickButton(driver, XboxController.Button.kA.value);
     turretToggleButton = new JoystickButton(operator, XboxController.Button.kStart.value);
 
     swere.setDefaultCommand(swere.driveWithJoystick(driver));
     turret.setDefaultCommand(turretToAngle);
+    intake.setDefaultCommand(moveWristWithJoystick);
 
     SmartDashboard.putData(swere);
     SmartDashboard.putData(turret);

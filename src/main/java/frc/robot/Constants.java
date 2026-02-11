@@ -120,4 +120,19 @@ public final class Constants {
     public static final double TURRET_GEAR_RATIO = 0;
     public static final double TURRET_POSITION_CONVERSION = 360/TURRET_GEAR_RATIO;
   }
+
+  public static class IntakeConstants{
+    public static final int INTAKE_ID = 0;
+    public static final int WRIST_ID = 0;
+    public static final int WRIST_ENCODER_ID = 0;
+    
+    public static final double WRIST_GEAR_RATIO = 3.0;
+    public static final double WRIST_POSITION_CONVERSION_FACTOR = (2*Math.PI) / WRIST_GEAR_RATIO;
+
+    public static final double WRIST_ENCODER_ZERO_OFFSET = 0.0;
+
+    public static final double WRIST_ALLOWED_ERROR = 0.0;
+    
+    public static final double[] WRIST_PID_VALUES = {0.0, 0.0, 0.0};
+  }
 }
