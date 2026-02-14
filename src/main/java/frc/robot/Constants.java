@@ -138,5 +138,13 @@ public final class Constants {
 
   public static class ShooterConstants{
     public static final int SPINDEXER_ID = 0;
+    public static final int TOP_SHOOTER_MOTOR_ID = 0;
+    public static final int BOTTOM_SHOOTER_MOTOR_ID = 0;
+    public static final int FEEDER_MOTOR_ID = 0;
+
+    public static final int SHOOTER_VELOCITY_ERROR = 0;
+
+    public static final double[] TOP_SHOOTER_PID_VALUES = {0.0, 0.0, 0.0};
+    public static final double[] BOTTOM_SHOOTER_PID_VALUES = {0.0, 0.0, 0.0};
   }
 }
