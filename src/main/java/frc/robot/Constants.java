@@ -94,15 +94,15 @@ public final class Constants {
     //PIDF values
     public static final double[] DRIVE_PIDF_VALUES = {0.002, 0, 0.008, 0};
     public static final double[] DRIVE_SVA_VALUES = {0.0952, 0.044888, 0.00558155};
-    public static final double[] ROTATE_PID_VALUES = {0.55, 0.0, 0.4};
+    public static final double[] ROTATE_PID_VALUES = {0.3, 0.0, 0.4};
 
     //Max drive and rotate speeds
     public static final double MAX_DRIVE_SPEED = Units.feetToMeters(15);
-    public static final double MAX_ROTATE_SPEED = Math.PI;
+    public static final double MAX_ROTATE_SPEED = 3 * Math.PI;
 
     //Min drive and rotate speeds
     public static final double MIN_DRIVE_SPEED = Units.feetToMeters(3);
-    public static final double MIN_ROTATE_SPPEED = 0.5 * Math.PI;
+    public static final double MIN_ROTATE_SPPEED = Math.PI;
   }
 
   public static class TurretConstants{

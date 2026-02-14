@@ -59,6 +59,7 @@ public class SwerveModule {
     private SwerveModuleState swerveModuleState;
     
     private double encoderOffset;
+    private double driveVelConversion;
 
     private String label;
 
@@ -80,7 +81,7 @@ public class SwerveModule {
             .inverted(invertDrive);
         rotateConfig
             .smartCurrentLimit(60)
-            .idleMode(IdleMode.kCoast)
+            .idleMode(IdleMode.kBrake)
             .inverted(invertRotate);
 
 
@@ -89,7 +90,7 @@ public class SwerveModule {
         rotateEncoder = rotateMotor.getEncoder();
 
         double drivePosConversion = ((Math.PI * diameter) / DriveConstants.DRIVE_GEAR_RATIO);
-        double driveVelConversion = (drivePosConversion / 60);
+        driveVelConversion = (drivePosConversion / 60);
 
         /* Sets the Drive converstion (Posistion and Velocity)  factors  */
         driveConfig.encoder.positionConversionFactor(drivePosConversion); //POSITION
@@ -104,8 +105,8 @@ public class SwerveModule {
         rotateController = rotateMotor.getClosedLoopController();
 
         /* Sets the feedback sensor for each motor */
-        // driveConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-        // rotateConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+        driveConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+        rotateConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
         /* Drive PID values */
         driveConfig.closedLoop.p(DriveConstants.DRIVE_PIDF_VALUES[0]);
@@ -126,7 +127,7 @@ public class SwerveModule {
         /*Configures drive and rotate motors with there SparkMaxConfig */
 
         driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        rotateMotor.configure(rotateConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        rotateMotor.configure(rotateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         this.label = label;
 
@@ -148,7 +149,7 @@ public class SwerveModule {
         return driveEnconder.getVelocity();
     }
 
-    /* Returns the cancoder reading as a rotation2d */
+    /* returns the cancoder reading as a rotation2d */
     public Rotation2d canCoderRotation2d() {
         return new Rotation2d(rotateAbsoluteEncoder.getPosition().getValueAsDouble());
     }
@@ -206,14 +207,26 @@ public class SwerveModule {
         return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getRotatePosition()));
 
     }
+
+    public double getDriveSetpoint(){
+        return driveController.getSetpoint();
+    }
+
+    public double getRotateSetpoint(){
+        return rotateController.getSetpoint();
+    }
+
+    public double getVelocityConversion(){
+        return driveVelConversion;
+    }
  
     /* Sets the refrence of drive and rotate motor */
     public void setState(SwerveModuleState state){
 
         state.optimize(new Rotation2d(getRotateEncoderPosition()));
-        state.cosineScale(new Rotation2d(getRotateEncoderPosition()));
+        //state.cosineScale(new Rotation2d(getRotateEncoderPosition()));
 
-        driveController.setSetpoint(state.speedMetersPerSecond, ControlType.kVelocity);
+        driveController.setSetpoint(state.speedMetersPerSecond / driveVelConversion, ControlType.kVelocity);
         rotateController.setSetpoint(state.angle.getRadians(), ControlType.kPosition);
     }
 }
