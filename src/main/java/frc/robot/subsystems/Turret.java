@@ -15,6 +15,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.CustomXboxController;
@@ -27,11 +29,15 @@ public class Turret extends SubsystemBase {
   private RelativeEncoder turretEncoder;
   private SparkClosedLoopController turretController;
 
+  private SwerveDrive swerve;
+
   private double goal;
   private boolean manual;
 
   /** Creates a new Turret. */
-  public Turret() {
+  public Turret(SwerveDrive swerve) {
+    this.swerve = swerve;
+
     turretMotor = new SparkFlex(TurretConstants.TURRET_ID, MotorType.kBrushless);
     turretConfig = new SparkFlexConfig();
 
@@ -94,11 +100,47 @@ public class Turret extends SubsystemBase {
     manual = !manual;
   }
 
+  /**
+   * @return Y coordinate of the turret on the field
+   */
+  public double getTurretY(){
+    double h = swerve.getPose2d().getY();
+    double k = swerve.getPose2d().getX();
+    double robotAngle = swerve.getGyro().getYaw();
+    double y = h + TurretConstants.TURRET_OFFSET_Y;
+    double x = k + TurretConstants.TURRET_OFFSET_X;
+    return h +((y-h)*Math.cos(robotAngle)) - ((x-k) * Math.sin(robotAngle));
+  }
+
+  /**
+   * @return X coordinate of the turret on the field
+   */
+  public double getTurretX(){
+    double h = swerve.getPose2d().getY(); //Robot y coordinate
+    double k = swerve.getPose2d().getX(); //Robot x coordinate
+    double robotAngle = swerve.getGyro().getYaw(); //Robot rotation in degrees
+    double y = h + TurretConstants.TURRET_OFFSET_Y; //Original y coordinate of turret relative to robot center y coordinate
+    double x = k + TurretConstants.TURRET_OFFSET_X; //Original x coordinate of turret relative to robot center x coordinate
+    return k +((y-h)*Math.sin(robotAngle)) + ((x-k) * Math.cos(robotAngle));
+  }
+
+  /**
+   * @param pose Pose to get the angle to
+   * @return angle to the pose
+   */
+  public double getAngleToPose(Pose2d pose){
+    double x = pose.getX() - getTurretX();
+    double y = pose.getY() - getTurretY();
+    return Math.atan(x/y);
+  }
+
   /**puts the data for the turret on smartdashboard*/
   public void initSendable(SendableBuilder builder){
     super.initSendable(builder);
     builder.addDoubleProperty("Turret position", () -> turretEncoder.getPosition(), null);
     builder.addDoubleProperty("Turret goal", () -> turretController.getSetpoint(), null);
+    builder.addDoubleProperty("Turret X", () -> getTurretX(), null);
+    builder.addDoubleProperty("Turret Y", () -> getTurretY(), null);
   }
 
   @Override

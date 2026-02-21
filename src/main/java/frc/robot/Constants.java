@@ -120,11 +120,14 @@ public final class Constants {
     public static final int[] TURRET_PID_VALUES = {0, 0, 0};
 
     //Will be used if turret doesn't use a slip ring
-    public static final double TURRET_MIN_ANGLE = 0; //The minimum angle the turret can safely be at
-    public static final double TURRET_MAX_ANGLE = 0; //The maximum angle the turret can safely be at
+    public static final double TURRET_MIN_ANGLE = 0; //The minimum angle the turret can safely be at; change later
+    public static final double TURRET_MAX_ANGLE = 0; //The maximum angle the turret can safely be at; change later
 
     public static final double TURRET_GEAR_RATIO = 0;
     public static final double TURRET_POSITION_CONVERSION = 360/TURRET_GEAR_RATIO;
+
+    public static final double TURRET_OFFSET_X = Units.feetToMeters(0); //update with other values later; according to field coordinates
+    public static final double TURRET_OFFSET_Y = Units.feetToMeters(0); //update with other values later; according to field coordingates
   }
 
   public static class IntakeConstants{
