@@ -6,8 +6,19 @@ package frc.robot.subsystems;
 
 import static frc.robot.Constants.IntakeConstants.*;
 
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
@@ -25,7 +36,8 @@ public class Intake extends SubsystemBase {
   private SparkFlex wristMotor;
 
   private RelativeEncoder intakeEncoder;
-  private DutyCycleEncoder throughBore;
+  private RelativeEncoder wristEncoder;
+  // private DutyCycleEncoder throughBore;
 
   private SparkClosedLoopController wristPID;
 
@@ -37,7 +49,8 @@ public class Intake extends SubsystemBase {
     wristMotor = new SparkFlex(WRIST_ID, MotorType.kBrushless);
 
     intakeEncoder = intakeMotor.getEncoder();
-    throughBore = new DutyCycleEncoder(WRIST_ENCODER_ID);
+    wristEncoder = wristMotor.getEncoder();
+    // throughBore = new DutyCycleEncoder(WRIST_ENCODER_ID);
 
     wristPID = wristMotor.getClosedLoopController();
 
@@ -52,15 +65,16 @@ public class Intake extends SubsystemBase {
       .idleMode(IdleMode.kBrake)
       .smartCurrentLimit(30);
 
-    wristConfig.absoluteEncoder
-      .positionConversionFactor(WRIST_POSITION_CONVERSION_FACTOR)
-      .zeroOffset(WRIST_ENCODER_ZERO_OFFSET);
+    wristConfig.encoder
+      .positionConversionFactor(WRIST_POSITION_CONVERSION_FACTOR);
 
     wristConfig.closedLoop
       .allowedClosedLoopError(WRIST_ALLOWED_ERROR, ClosedLoopSlot.kSlot0)
+      .allowedClosedLoopError(WRIST_ALLOWED_ERROR, ClosedLoopSlot.kSlot1)
       .outputRange(-1, 1)
       .positionWrappingEnabled(false)
-      .pid(WRIST_PID_VALUES[0], WRIST_PID_VALUES[1], WRIST_PID_VALUES[2], ClosedLoopSlot.kSlot0);
+      .pid(WRIST_PID_VALUES_SLOT0[0], WRIST_PID_VALUES_SLOT0[1], WRIST_PID_VALUES_SLOT0[2], ClosedLoopSlot.kSlot0)
+      .pid(WRIST_PID_VALUES_SLOT1[0], WRIST_PID_VALUES_SLOT1[1], WRIST_PID_VALUES_SLOT1[2], ClosedLoopSlot.kSlot1);
 
     intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     wristMotor.configure(wristConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -87,7 +101,24 @@ public class Intake extends SubsystemBase {
    * @param setpoint The position to move to.
    */
   public void wristToPosition(double setpoint) {
-    wristPID.setSetpoint(setpoint, ControlType.kPosition);
+    if(setpoint > getWristPosition()) {
+      wristPID.setSetpoint(setpoint, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    }else if(setpoint < getWristPosition()) {
+      wristPID.setSetpoint(setpoint, ControlType.kPosition, ClosedLoopSlot.kSlot1);
+      if(wristPID.isAtSetpoint()) {
+        resetWristEncoder();
+      }
+    }
+  }
+
+  /**Moves the wrist to the given position and sets the intake to the given speed.
+   * 
+   * @param setpoint The position to move the wrist to.
+   * @param speed The speed to set the intake to.
+   */
+  public void wristAndIntake(double setpoint, double speed) {
+    wristToPosition(setpoint);
+    spinIntake(speed);
   }
 
   /**Stops the wrist motor.
@@ -104,6 +135,13 @@ public class Intake extends SubsystemBase {
     intakeMotor.stopMotor();
   }
 
+  /**Resets the wrist encoder to 0.0.
+   * 
+   */
+  public void resetWristEncoder() {
+    wristEncoder.setPosition(0.0);
+  }
+
   /**Gets the velocity of the intake in RPM.
    * 
    * @return The velocity of the intake in RPM.
@@ -112,20 +150,53 @@ public class Intake extends SubsystemBase {
     return intakeEncoder.getVelocity();
   }
 
-  /**Gets the absolute position of the wrist.
+  /**Gets the position of the wrist.
    * 
-   * @return The absolute position of the wrist.
+   * @return The position of the wrist.
    */
   public double getWristPosition() {
-    return throughBore.get();
+    return wristEncoder.getPosition();
+  }
+
+  /**Gets the velocity of the wrist.
+   * 
+   * @return The velocity of the wrist.
+   */
+  public double getWristVelocity() {
+    return wristEncoder.getVelocity();
+  }
+
+  /**Gets the voltage of the wrist.
+   * 
+   * @return The voltage of the wrist.
+   */
+  public double getWristVoltage() {
+    return wristMotor.getAppliedOutput() * wristMotor.getBusVoltage();
   }
 
   /**Gets the wrist encoder.
    * 
    * @return The wrist encoder.
    */
-  public DutyCycleEncoder getWristEncoder() {
-    return throughBore;
+  public RelativeEncoder getWristEncoder() {
+    return wristEncoder;
+  }
+
+  /**Checks to see if the wrist is at the desired position.
+   * 
+   * @param position The desired position.
+   * @return {@code true} if the wrist is at the desired position, {@code false} otherwise.
+   */
+  public boolean wristAtPosition(double position) {
+    return Math.abs(wristEncoder.getPosition() - position) < 0.2;
+  }
+
+  /**Gets the voltage of the intake.
+   * 
+   * @return The voltage of the intake.
+   */
+  public double getIntakeVoltage() {
+    return intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage();
   }
 
   //Putting intake and wrist data onto Elastic
@@ -135,7 +206,12 @@ public class Intake extends SubsystemBase {
     builder.setSmartDashboardType("Intake");
 
     builder.addDoubleProperty("Intake Velocity", () -> getIntakeVelocity(), null);
+    builder.addDoubleProperty("Intake Voltage", () -> getIntakeVoltage(), null);
+    builder.addDoubleProperty("Intake Position", () -> intakeEncoder.getPosition(), null);
     builder.addDoubleProperty("Wrist Position", () -> getWristPosition(), null);
+    builder.addDoubleProperty("Wrist Velocity", () -> getWristVelocity(), null);
+    builder.addDoubleProperty("Wrist Voltage", () -> getWristVoltage(), null);
+    builder.addDoubleProperty("Wrist Goal", () -> wristPID.getSetpoint(), null);
   }
 
   @Override

@@ -27,6 +27,9 @@ public class PhotonVision extends SubsystemBase {
   private final Camera[] allCameras;
 
   private Camera turretCamera;
+  private Camera robotRightCamera;
+  private Camera robotLeftCamera;
+  private Camera robotBackCamera;
 
   private Pose3d pose3d;
   private Pose2d pose2d;
@@ -35,10 +38,16 @@ public class PhotonVision extends SubsystemBase {
 
   /** Creates a new PhotonVision. */
   public PhotonVision() {
-    turretCamera = new Camera(LEFT_TURRET_CAMERA, LEFT_TURRET_CAMERA_TRANSFORM_3D);
+    turretCamera = new Camera(TURRET_CAMERA, TURRET_CAMERA_TRANSFORM_3D);
+    robotRightCamera = new Camera(ROBOT_RIGHT_CAMERA, ROBOT_RIGHT_CAMERA_TRANSFORM_3D);
+    robotLeftCamera = new Camera(ROBOT_LEFT_CAMERA, ROBOT_LEFT_CAMERA_TRANSFORM_3D);
+    robotBackCamera = new Camera(ROBOT_BACK_CAMERA, RIGHT_BACK_CAMERA_TRANSFORM_3D);
 
-    allCameras = new Camera[1];
+    allCameras = new Camera[4];
     allCameras[0] = turretCamera;
+    allCameras[1] = robotRightCamera;
+    allCameras[2] = robotLeftCamera;
+    allCameras[3] = robotBackCamera;
 
     pose3d = new Pose3d();
     pose2d = new Pose2d();
@@ -357,8 +366,10 @@ public class PhotonVision extends SubsystemBase {
     builder.addDoubleProperty("Robot Roll", () -> getRobotRoll().get(), null);
     builder.addDoubleProperty("Robot Pitch", () -> getRobotPitch().get(), null);
     builder.addDoubleProperty("Robot Yaw", () -> getRobotYaw().get(), null);
-    builder.addDoubleProperty("Left Turret Camera Ambiguity", () -> allCameras[0].getPoseAmbiguity().get(), null);
-    builder.addDoubleProperty("Right Turret Camera Ambiguity", () -> allCameras[1].getPoseAmbiguity().get(), null);
+    builder.addDoubleProperty("Turret Camera Ambiguity", () -> allCameras[0].getPoseAmbiguity().get(), null);
+    builder.addDoubleProperty("Right Robot Camera Ambiguity", () -> allCameras[1].getPoseAmbiguity().get(), null);
+    builder.addDoubleProperty("Left Robot Camera Ambiguity", () -> allCameras[2].getPoseAmbiguity().get(), null);
+    builder.addDoubleProperty("Back Robot Camera Ambiguity", () -> allCameras[3].getPoseAmbiguity().get(), null);
     builder.addDoubleProperty("Distance to Hub", () -> getDistanceToHub().get(), null);
     builder.addDoubleProperty("Yaw to Hub", () -> getYawToHub().get(), null);
     SmartDashboard.putData(field);

@@ -7,11 +7,31 @@ package frc.robot.commands;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Intake;
 
 public final class Autos {
   /** Example static factory for an autonomous command. */
   public static Command exampleAuto(ExampleSubsystem subsystem) {
     return Commands.sequence(subsystem.exampleMethodCommand(), new ExampleCommand(subsystem));
+  }
+
+  /**Runs the SysIdRoutine of the top shooter motor.
+   * 
+   * @param shooter The shooter subsystem.
+   * @return A command that runs the top shooter SysIdRoutine.
+   */
+  public static Command topShooterSysID(Shooter shooter) {
+    return shooter.runTopShooterSysID();
+  }
+
+  /**Runs the SysIdRoutine of the bottom shooter motor.
+   * 
+   * @param shooter The shooter subsystem.
+   * @return A command that runs the bottom shooter SysIdRoutine.
+   */
+  public static Command bottomShooterSysID(Shooter shooter) {
+    return shooter.runBottombottomShooterSysID();
   }
 
   private Autos() {

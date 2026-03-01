@@ -4,21 +4,18 @@
 
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.ShooterConstants.*;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
-import frc.robot.Constants.ShooterConstants;
-import static frc.robot.Constants.ShooterConstants.*;
-
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class Spindexer extends SubsystemBase {
   private SparkFlex spindexer;
@@ -54,20 +51,34 @@ public class Spindexer extends SubsystemBase {
   }
 
   /**
-   * Spins the spindexer at a different speed depending on if the Shooter is running or not
+   * Spins the spindexer if the shooter is running.
    */
   public void spinSpindexer(){
-    if(!isShooting)
-      spindexer.set(0.4);
-    else
-      spindexer.set(0.8);
+    if(isShooting) {
+      spindexer.set(0.7);
+    }
+    else{
+      spindexer.set(0);
+    }
+  }
+
+  /**Spins the spindexer at a set speed.
+   * 
+   * @param speed The speed to spin the spindexer at.
+   */
+  public void SpindexerWithSpeed(double speed) {
+    spindexer.set(speed);
   }
 
   /**
    * @return Returns a command for running the spindexer
    */
   public Command runSpindexer(){
-    return Commands.run(() -> spinSpindexer(), this);
+    return new WaitCommand(.5).andThen(() -> spinSpindexer(), this);
+  }
+
+  public double getSpindexerVelocity() {
+    return spindexer.getEncoder().getVelocity();
   }
 
   /**
@@ -76,10 +87,11 @@ public class Spindexer extends SubsystemBase {
   public void initSendable(SendableBuilder builder){
     super.initSendable(builder);
     builder.addBooleanProperty("Is shooting", () -> getShooting(), null);
+    builder.addDoubleProperty("Spindexer Velocity", () -> getSpindexerVelocity(), null);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // spindexer.set(0.1);
   }
 }
