@@ -5,10 +5,15 @@
 package frc.robot.commands;
 
 import frc.robot.subsystems.ExampleSubsystem;
+
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Intake;
+import frc.robot.Constants.IntakeConstants;
 
 public final class Autos {
   /** Example static factory for an autonomous command. */
@@ -32,6 +37,25 @@ public final class Autos {
    */
   public static Command bottomShooterSysID(Shooter shooter) {
     return shooter.runBottombottomShooterSysID();
+  }
+
+  public static Command basicCenterAuto(SwerveDrive swerve, Shooter shooter, Intake intake){
+    return Commands.sequence(
+      new PathPlannerAuto("Basic Center Auto"),
+      Commands.run(() -> intake.wristToPosition(IntakeConstants.WRIST_MIDDLE_POSITION), intake).withTimeout(0.5),
+      Commands.run(() -> shooter.shootWithSpeed(-1500, -2200, 1), shooter)
+    ); 
+  }
+  public static Command basicLeftAuto(SwerveDrive swerve, Shooter shooter){
+    return new PathPlannerAuto("Basic Left Auto");
+  }
+
+  public static Command basicRightAuto(SwerveDrive swerve, Shooter shooter){
+    return new PathPlannerAuto("Basic Right Auto");
+  }
+
+  public static Command rightOutpostShoot(SwerveDrive swerve, Shooter shooter){
+    return new PathPlannerAuto("Right Outpost Shoot");
   }
 
   private Autos() {

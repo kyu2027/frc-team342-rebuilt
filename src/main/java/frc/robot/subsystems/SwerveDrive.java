@@ -134,17 +134,17 @@ public class SwerveDrive extends SubsystemBase {
         /* Initalizes Kinematics */
         kinematics = new SwerveDriveKinematics(
   
-          /*Front Left */ new Translation2d(Units.inchesToMeters(10.375), Units.inchesToMeters(10.375)),
-          /*Front Right */ new Translation2d(Units.inchesToMeters(10.375), Units.inchesToMeters(-10.375)),
-          /*Back Left */ new Translation2d(Units.inchesToMeters(-10.375), Units.inchesToMeters(10.375)),
-          /*Back Right */ new Translation2d(Units.inchesToMeters(-10.375), Units.inchesToMeters(-10.375))
+          /*Front Left */ new Translation2d(Units.inchesToMeters(11.125), Units.inchesToMeters(11.125)),
+          /*Front Right */ new Translation2d(Units.inchesToMeters(11.125), Units.inchesToMeters(-11.125)),
+          /*Back Left */ new Translation2d(Units.inchesToMeters(-11.125), Units.inchesToMeters(11.125)),
+          /*Back Right */ new Translation2d(Units.inchesToMeters(-11.125), Units.inchesToMeters(-11.125))
   
         );
   
         /* Initalize NavX (Gyro) */
         NavX = new AHRS(AHRS.NavXComType.kMXP_SPI);
 
-        NavX.setAngleAdjustment(DriveConstants.NAVX_OFFSET);
+        NavX.setAngleAdjustment(68.48);
   
         /* Initalizes Odometry */
         odometry = new SwerveDriveOdometry( 

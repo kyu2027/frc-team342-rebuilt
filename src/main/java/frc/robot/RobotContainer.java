@@ -18,6 +18,10 @@ import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.Constants.IntakeConstants.*;
+
+import com.fasterxml.jackson.databind.util.Named;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.CustomXboxController;
@@ -103,6 +107,7 @@ public class RobotContainer {
     getFuelUnstuck = Commands.runEnd(() -> {intake.spinIntake(0.6);}, () -> intake.stopIntake(), intake);
     intakeFuel = Commands.runEnd(() -> {intake.spinIntake(-0.5);}, () -> intake.stopIntake(), intake);
     shoot = Commands.runEnd(() -> shooter.shootWithDistance(1), () -> shooter.stopShooterAndFeeder(), shooter);
+    
     // turretShoot = Commands.runEnd(() -> shooter.shootWithoutPID(-0.17, -0.52, 1), () -> shooter.stopShooterAndFeeder(), shooter);
     turretShoot = Commands.runEnd(() -> shooter.shootWithSpeed(-1500, -2200, 1), () -> shooter.stopShooterAndFeeder(), shooter);
     downtake = Commands.parallel(
@@ -128,6 +133,10 @@ public class RobotContainer {
 
     autoChooser.addOption("Top Shooter Sys ID", Autos.topShooterSysID(shooter));
     autoChooser.addOption("Bottom Shooter Sys ID", Autos.bottomShooterSysID(shooter));
+    autoChooser.addOption("Basic Center Auto", Autos.basicCenterAuto(swere, shooter,intake ));
+    autoChooser.addOption("Basic Left Auto", Autos.basicLeftAuto(swere, shooter));
+    autoChooser.addOption("Basic Right Auto", Autos.basicRightAuto(swere, shooter));
+    autoChooser.addOption("Right Outpost Shoot", Autos.rightOutpostShoot(swere, shooter));
     swere.setDefaultCommand(driveWithJoystick);
     // turret.setDefaultCommand(turretToAngle);
     intake.setDefaultCommand(moveWristWithJoystick);
@@ -140,6 +149,13 @@ public class RobotContainer {
     SmartDashboard.putData(shooter);
     SmartDashboard.putData(intake);
     SmartDashboard.putData(autoChooser);
+
+    NamedCommands.registerCommand("Shoot Command", turretShoot);
+    NamedCommands.registerCommand("Wrist Down", wristDown);
+    NamedCommands.registerCommand("Wrist Up", wristUp);
+    NamedCommands.registerCommand("Wrist Middle", wristMiddle);
+    NamedCommands.registerCommand("Intake", intakeFuel);
+
     // Configure the trigger bindings
     configureBindings();
   }
