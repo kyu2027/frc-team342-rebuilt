@@ -14,7 +14,7 @@ import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.PhotonVision;
 import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.SwerveDrive;
-import frc.robot.subsystems.Turret;
+// import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.Constants.IntakeConstants.*;
@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -38,7 +39,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final SwerveDrive swere;
-  private final Turret turret;
+  // private final Turret turret;
   private final PhotonVision photonVision;
   private final Intake intake;
   private final Spindexer spindexer;
@@ -52,20 +53,29 @@ public class RobotContainer {
   private final JoystickButton shootButton;
   private final JoystickButton reverseIntakeButton;
   private final JoystickButton toggleDriveAssistButton;
+  private final JoystickButton downtakeButton;
+  private final JoystickButton intakeButton;
   private final POVButton wristDownButton;
   private final POVButton wristUpButton;
+  private final POVButton wristMiddleButton;
 
   private final DriveWithJoystick driveWithJoystick;
   private final MoveWristWithJoystick moveWristWithJoystick;
 
   private final Command toggleFieldOriented;
-  private final Command turretToAngle;
-  private final Command toggleManualTurret;
+  // private final Command turretToAngle;
+  // private final Command toggleManualTurret;
   private final Command toggleDriveAssist;
   private final Command wristDown;
   private final Command wristUp;
+  private final Command wristMiddle;
+  private final Command intakeFuel;
   private final Command getFuelUnstuck;
   private final Command shoot;
+  private final Command turretShoot;
+  private final Command downtake;
+
+  private final SendableChooser<Command> autoChooser;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -75,7 +85,7 @@ public class RobotContainer {
   public RobotContainer() {
     photonVision = new PhotonVision();
     swere = new SwerveDrive(photonVision);
-    turret = new Turret(swere);
+    // turret = new Turret(swere);
     intake = new Intake();
     spindexer = new Spindexer();
     shooter = new Shooter(spindexer, photonVision);
@@ -84,35 +94,52 @@ public class RobotContainer {
     operator = new CustomXboxController(1);
 
     toggleFieldOriented = Commands.runOnce(() -> {swere.toggleFieldOriented();}, swere);
-    toggleManualTurret = Commands.runOnce(() -> {turret.toggleManual();}, turret);
+    // toggleManualTurret = Commands.runOnce(() -> {turret.toggleManual();}, turret);
     toggleDriveAssist = Commands.runOnce(() -> {swere.toggleDriveAssist();}, swere);
-    turretToAngle = Commands.run(() -> {turret.turretToAngle(photonVision.getYawToHub().get(), operator);});
-    wristDown = Commands.run(() -> intake.wristToPosition(IntakeConstants.WRIST_DOWN_POSITION), intake).alongWith(Commands.run(() -> {intake.spinIntake(0.6);}, intake));
-    wristUp = Commands.run(() -> intake.wristToPosition(IntakeConstants.WRIST_UP_POSITION), intake).alongWith(Commands.run(() -> {intake.spinIntake(0);}, intake));
-    getFuelUnstuck = Commands.runEnd(() -> {intake.spinIntake(-0.6);}, () -> intake.stopIntake(), intake);
-    shoot = Commands.runEnd(() -> shooter.shootWithDistance(), () -> shooter.shootWithoutPID(0), shooter);
+    // turretToAngle = Commands.run(() -> {turret.turretToAngle(photonVision.getYawToHub().get(), operator);});
+    wristDown = Commands.run(() -> intake.wristToPosition(IntakeConstants.WRIST_DOWN_POSITION), intake);
+    wristUp = Commands.run(() -> intake.wristToPosition(IntakeConstants.WRIST_UP_POSITION), intake);
+    wristMiddle = Commands.run(() -> intake.wristToPosition(IntakeConstants.WRIST_MIDDLE_POSITION), intake);
+    getFuelUnstuck = Commands.runEnd(() -> {intake.spinIntake(0.6);}, () -> intake.stopIntake(), intake);
+    intakeFuel = Commands.runEnd(() -> {intake.spinIntake(-0.5);}, () -> intake.stopIntake(), intake);
+    shoot = Commands.runEnd(() -> shooter.shootWithDistance(1), () -> shooter.stopShooterAndFeeder(), shooter);
+    // turretShoot = Commands.runEnd(() -> shooter.shootWithoutPID(-0.17, -0.52, 1), () -> shooter.stopShooterAndFeeder(), shooter);
+    turretShoot = Commands.runEnd(() -> shooter.shootWithSpeed(-1500, -2200, 1), () -> shooter.stopShooterAndFeeder(), shooter);
+    downtake = Commands.parallel(
+      Commands.runEnd(() -> shooter.feed(-0.9), () -> shooter.feed(0), shooter),
+      Commands.runEnd(() -> spindexer.SpindexerWithSpeed(-0.1), () -> spindexer.SpindexerWithSpeed(0), spindexer)
+    );
+
 
     driveWithJoystick = new DriveWithJoystick(swere, driver, photonVision);
     moveWristWithJoystick = new MoveWristWithJoystick(intake, operator);
-
     fieldOrientedButton = new JoystickButton(driver, XboxController.Button.kA.value);
     turretToggleButton = new JoystickButton(operator, XboxController.Button.kStart.value);
     toggleDriveAssistButton = new JoystickButton(driver, XboxController.Button.kB.value);
     shootButton = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
-    reverseIntakeButton = new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
+    reverseIntakeButton = new JoystickButton(operator, XboxController.Button.kX.value);
+    intakeButton = new JoystickButton(operator, XboxController.Button.kA.value);
+    downtakeButton = new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
     wristDownButton = new POVButton(operator, 180);
     wristUpButton = new POVButton(operator, 0);
+    wristMiddleButton = new POVButton(operator, 90);
 
+    autoChooser = new SendableChooser<>();
+
+    autoChooser.addOption("Top Shooter Sys ID", Autos.topShooterSysID(shooter));
+    autoChooser.addOption("Bottom Shooter Sys ID", Autos.bottomShooterSysID(shooter));
     swere.setDefaultCommand(driveWithJoystick);
-    turret.setDefaultCommand(turretToAngle);
+    // turret.setDefaultCommand(turretToAngle);
     intake.setDefaultCommand(moveWristWithJoystick);
     spindexer.setDefaultCommand(spindexer.runSpindexer());
 
     SmartDashboard.putData(swere);
-    SmartDashboard.putData(turret);
+    // SmartDashboard.putData(turret);
     SmartDashboard.putData(photonVision);
     SmartDashboard.putData(spindexer);
     SmartDashboard.putData(shooter);
+    SmartDashboard.putData(intake);
+    SmartDashboard.putData(autoChooser);
     // Configure the trigger bindings
     configureBindings();
   }
@@ -135,12 +162,17 @@ public class RobotContainer {
     // cancelling on release.
     m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
     fieldOrientedButton.onTrue(toggleFieldOriented); // 'A' button
-    turretToggleButton.onTrue(toggleManualTurret); // 'Start' button
+    // turretToggleButton.onTrue(toggleManualTurret); // 'Start' button
     toggleDriveAssistButton.onTrue(toggleDriveAssist); // 'B' button
-    shootButton.whileTrue(shoot);
+    shootButton.whileTrue(turretShoot);
+    // shootButton.whileTrue(shoot);
     wristUpButton.onTrue(wristUp);
     wristDownButton.onTrue(wristDown);
+    wristMiddleButton.onTrue(wristMiddle);
+    // wristUpButton.whileTrue(intakeFuel);
     reverseIntakeButton.whileTrue(getFuelUnstuck);
+    downtakeButton.whileTrue(downtake);
+    intakeButton.whileTrue(intakeFuel);
   }
 
   /**
@@ -150,6 +182,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return autoChooser.getSelected();
   }
 }

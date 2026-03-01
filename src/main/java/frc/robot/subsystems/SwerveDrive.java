@@ -22,7 +22,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathConstraints;
 import com.studica.frc.AHRS;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.SwerveModule;
@@ -143,7 +142,9 @@ public class SwerveDrive extends SubsystemBase {
         );
   
         /* Initalize NavX (Gyro) */
-        NavX = new AHRS(AHRS.NavXComType.kUSB1);
+        NavX = new AHRS(AHRS.NavXComType.kMXP_SPI);
+
+        NavX.setAngleAdjustment(DriveConstants.NAVX_OFFSET);
   
         /* Initalizes Odometry */
         odometry = new SwerveDriveOdometry( 
@@ -338,8 +339,8 @@ public class SwerveDrive extends SubsystemBase {
      * 
      * @return The yaw in radians.
      */
-    public double gyroRad(){
-      return NavX.getYaw() * Math.PI/180;
+    public double  gyroRad(){
+      return (NavX.getAngle() * Math.PI/180) + 0.7986626364;
     }
 
     /**Resets the pose2d of the robot. This sets everything to 0.
@@ -459,7 +460,7 @@ public class SwerveDrive extends SubsystemBase {
     sendableBuilder.addBooleanProperty("Slow Mode", ()-> slowMode, null);
 
     sendableBuilder.addDoubleProperty("Gyro Reading", ()-> gyroRad(), null); //NAVX USED TO BE HERE
-    sendableBuilder.addDoubleProperty("Raw Gyro Reading", ()-> NavX.getYaw(), null); //NAVX USED TO BE HERE
+    sendableBuilder.addDoubleProperty("Raw Gyro Reading", ()-> NavX.getAngle(), null); //NAVX USED TO BE HERE
 
     sendableBuilder.addDoubleProperty("FL Distance Travelled", ()-> frontLeftModule.getDistance(), null);
     sendableBuilder.addDoubleProperty("FL Velocity", ()-> frontLeftModule.getDriveVelocity(), null);
