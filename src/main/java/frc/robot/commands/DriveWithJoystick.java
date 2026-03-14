@@ -76,7 +76,7 @@ public class DriveWithJoystick extends Command {
       double leftTriggerValue = joyStick.getLeftTriggerAxis();
       
       double speedModifier = DriveConstants.MAX_DRIVE_SPEED - (leftTriggerValue * (DriveConstants.MAX_DRIVE_SPEED - DriveConstants.MIN_DRIVE_SPEED));
-      double yaw = photonVision.getYawToHub().get();
+      double yaw = photonVision.getYawToHub(photonVision.getRobotPose2d().get());
       xSpeed = MathUtil.applyDeadband(xSpeed, 0.15) * speedModifier;
       ySpeed = MathUtil.applyDeadband(ySpeed, 0.15) * speedModifier;
 

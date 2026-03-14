@@ -10,6 +10,7 @@ import frc.robot.subsystems.Spindexer;
 import static edu.wpi.first.units.Units.Volts;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -127,8 +128,8 @@ public class Shooter extends SubsystemBase {
 
     topShooterSysIDRoutine = new SysIdRoutine(
       new Config(
-        Volts.of(1).per(Second),
-        Volts.of(2),
+        Volts.of(2).per(Second),
+        Volts.of(8),
         Seconds.of(20)
       ),
       new Mechanism(
@@ -137,8 +138,8 @@ public class Shooter extends SubsystemBase {
 
     bottomShooterSysIDRoutine = new SysIdRoutine(
       new Config(
-        Volts.of(1).per(Second),
-        Volts.of(2),
+        Volts.of(2).per(Second),
+        Volts.of(8),
         Seconds.of(20)
       ),
       new Mechanism(
@@ -236,16 +237,16 @@ public class Shooter extends SubsystemBase {
     return Commands.sequence(
       topShooterSysIDRoutine
         .quasistatic(Direction.kForward)
-        .withTimeout(3),
+        .withTimeout(5),
       topShooterSysIDRoutine
         .quasistatic(Direction.kReverse)
-        .withTimeout(3),
+        .withTimeout(5),
       topShooterSysIDRoutine
         .dynamic(Direction.kForward)
-        .withTimeout(3),
+        .withTimeout(5),
       topShooterSysIDRoutine
         .dynamic(Direction.kReverse)
-        .withTimeout(3)
+        .withTimeout(5)
     );
   }
 
@@ -257,16 +258,16 @@ public class Shooter extends SubsystemBase {
     return Commands.sequence(
       bottomShooterSysIDRoutine
         .quasistatic(Direction.kForward)
-        .withTimeout(3),
+        .withTimeout(5),
       bottomShooterSysIDRoutine
         .quasistatic(Direction.kReverse)
-        .withTimeout(3),
+        .withTimeout(5),
       bottomShooterSysIDRoutine
         .dynamic(Direction.kForward)
-        .withTimeout(3),
+        .withTimeout(5),
       bottomShooterSysIDRoutine
         .dynamic(Direction.kReverse)
-        .withTimeout(3)
+        .withTimeout(5)
     );
   }
 
@@ -287,9 +288,9 @@ public class Shooter extends SubsystemBase {
    * 
    * @param speed The speed to set the feeder to.
    */
-  public void shootWithDistance(double speed) {
-    topShooterPID.setSetpoint(getTopTargetRPM(photonVision.getDistanceToHub().get()), ControlType.kVelocity);
-    bottomShooterPID.setSetpoint(getBottomTargetRPM(photonVision.getDistanceToHub().get()), ControlType.kVelocity);
+  public void shootWithDistance(double speed, Pose2d pose) {
+    topShooterPID.setSetpoint(getTopTargetRPM(photonVision.getDistanceToHub(pose)), ControlType.kVelocity);
+    bottomShooterPID.setSetpoint(getBottomTargetRPM(photonVision.getDistanceToHub(pose)), ControlType.kVelocity);
     feed(speed);
     spindexer.setShooting(true);
     spindexer.setAtDesiredSpeed(topShooterPID.isAtSetpoint() && bottomShooterPID.isAtSetpoint());

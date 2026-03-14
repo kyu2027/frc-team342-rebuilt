@@ -106,7 +106,7 @@ public class RobotContainer {
     wristMiddle = Commands.run(() -> intake.wristToPosition(IntakeConstants.WRIST_MIDDLE_POSITION), intake);
     getFuelUnstuck = Commands.runEnd(() -> {intake.spinIntake(0.6);}, () -> intake.stopIntake(), intake);
     intakeFuel = Commands.runEnd(() -> {intake.spinIntake(-1);}, () -> intake.stopIntake(), intake);
-    shoot = Commands.runEnd(() -> shooter.shootWithDistance(1), () -> shooter.stopShooterAndFeeder(), shooter);
+    shoot = Commands.runEnd(() -> shooter.shootWithDistance(1, photonVision.getRobotPose2d().get()), () -> shooter.stopShooterAndFeeder(), shooter);
     
     // turretShoot = Commands.runEnd(() -> shooter.shootWithoutPID(-0.17, -0.52, 1), () -> shooter.stopShooterAndFeeder(), shooter);
     turretShoot = Commands.runEnd(() -> shooter.shootWithSpeed(-1500, -2200, 1), () -> shooter.stopShooterAndFeeder(), shooter);

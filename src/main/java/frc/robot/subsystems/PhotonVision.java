@@ -6,13 +6,15 @@ package frc.robot.subsystems;
 
 import static frc.robot.Constants.VisionConstants.*;
 import frc.robot.Camera;
-
+import frc.robot.AprilTagIDs.*;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -372,17 +374,78 @@ public class PhotonVision extends SubsystemBase {
     this.pose2d = pose2d;
   }
 
+  /**Gets the closest centered hub tag using the robot pose2d.
+   * If robot pose2d is not available, this returns -1.
+   * 
+   * @return The ID of the closest centered hub tag.
+   */
+  public int getClosestCenterHubTag() {
+    int closestTagID = -1;
+    double lowestDistance = 20;
+
+    if(getRobotPose2d().isPresent()) {
+      if(DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
+        for(centerHubTagsIDs hubTag : centerHubTagsIDs.values()) {
+          if(PhotonUtils.getDistanceToPose(pose2d, FIELD_LAYOUT.getTagPose(hubTag.getCenterRedHubTagID()).get().toPose2d()) < lowestDistance) {
+            closestTagID = hubTag.getCenterRedHubTagID();
+            lowestDistance = PhotonUtils.getDistanceToPose(pose2d, FIELD_LAYOUT.getTagPose(hubTag.getCenterRedHubTagID()).get().toPose2d());
+          }
+        }
+      }else if(DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+        for(centerHubTagsIDs hubTag : centerHubTagsIDs.values()) {
+          if(PhotonUtils.getDistanceToPose(pose2d, FIELD_LAYOUT.getTagPose(hubTag.getCenterBlueHubTagID()).get().toPose2d()) < lowestDistance) {
+            closestTagID = hubTag.getCenterBlueHubTagID();
+            lowestDistance = PhotonUtils.getDistanceToPose(pose2d, FIELD_LAYOUT.getTagPose(hubTag.getCenterBlueHubTagID()).get().toPose2d());
+          }
+        }
+      }
+    }
+
+    return closestTagID;
+  }
+
   /**Gets the distance from the robot to the hub.
    * 
    * @return The distance (in meters) from the robot to the hub.
    * If the robot pose2d or the hub tag is not present, this returns 0.0.
    */
-  public Optional<Double> getDistanceToHub() {
-    if(getTurretPose2d().isPresent() && FIELD_LAYOUT.getTagPose(allCameras[0].getTrackedHubTag().get().getFiducialId()).isPresent()) {
-      return Optional.of(PhotonUtils.getDistanceToPose(getTurretPose2d().get(), FIELD_LAYOUT.getTagPose(allCameras[0].getTrackedHubTag().get().getFiducialId()).get().toPose2d()));
+  public double getDistanceToHub(Pose2d pose) {
+    // if(getTurretPose2d().isPresent() && FIELD_LAYOUT.getTagPose(allCameras[0].getTrackedHubTag().get().getFiducialId()).isPresent()) {
+    //   return Optional.of(PhotonUtils.getDistanceToPose(getTurretPose2d().get(), FIELD_LAYOUT.getTagPose(allCameras[0].getTrackedHubTag().get().getFiducialId()).get().toPose2d()));
+    // }
+    
+    // return Optional.of(0.0);
+
+    // if(FIELD_LAYOUT.getTagPose(getClosestCenterHubTag()).isPresent()) {
+    //   return PhotonUtils.getDistanceToPose(pose2d, FIELD_LAYOUT.getTagPose(getClosestCenterHubTag()).get().toPose2d());
+    // }
+
+    // return 0.0;
+
+    return PhotonUtils.getDistanceToPose(pose, getHubCenterPose2d());
+  }
+
+  /**Gets the pose2d of the center of the hub.
+   * This uses the poses of the front and back centered hub tags.
+   * 
+   * @return Pose2d of the center of the hub.
+   */
+  public Pose2d getHubCenterPose2d() {
+    double x = 0.0;
+    double y = 0.0;
+    double rotation = 0.0;
+
+    if(DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
+      x = (FIELD_LAYOUT.getTagPose(centerHubTagsIDs.FRONT.getCenterRedHubTagID()).get().toPose2d().getX() + FIELD_LAYOUT.getTagPose(centerHubTagsIDs.BACK.getCenterRedHubTagID()).get().toPose2d().getX()) / 2;
+      y = (FIELD_LAYOUT.getTagPose(centerHubTagsIDs.FRONT.getCenterRedHubTagID()).get().toPose2d().getY() + FIELD_LAYOUT.getTagPose(centerHubTagsIDs.BACK.getCenterRedHubTagID()).get().toPose2d().getY()) / 2;
+      rotation = (FIELD_LAYOUT.getTagPose(centerHubTagsIDs.FRONT.getCenterRedHubTagID()).get().toPose2d().getRotation().getRadians() + FIELD_LAYOUT.getTagPose(centerHubTagsIDs.BACK.getCenterRedHubTagID()).get().toPose2d().getRotation().getRadians()) / 2;
+    }else if(DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+      x = (FIELD_LAYOUT.getTagPose(centerHubTagsIDs.FRONT.getCenterBlueHubTagID()).get().toPose2d().getX() + FIELD_LAYOUT.getTagPose(centerHubTagsIDs.BACK.getCenterBlueHubTagID()).get().toPose2d().getX()) / 2;
+      y = (FIELD_LAYOUT.getTagPose(centerHubTagsIDs.FRONT.getCenterBlueHubTagID()).get().toPose2d().getY() + FIELD_LAYOUT.getTagPose(centerHubTagsIDs.BACK.getCenterBlueHubTagID()).get().toPose2d().getY()) / 2;
+      rotation = (FIELD_LAYOUT.getTagPose(centerHubTagsIDs.FRONT.getCenterBlueHubTagID()).get().toPose2d().getRotation().getRadians() + FIELD_LAYOUT.getTagPose(centerHubTagsIDs.BACK.getCenterBlueHubTagID()).get().toPose2d().getRotation().getRadians()) / 2;
     }
     
-    return Optional.of(0.0);
+    return new Pose2d(x, y, new Rotation2d(rotation));
   }
 
   /**Gets the yaw from the robot to the hub.
@@ -390,8 +453,18 @@ public class PhotonVision extends SubsystemBase {
    * @return The yaw (in degrees) from the robot to the hub.
    * If the distance to the hub is not present, this returns 0.0.
    */
-  public Optional<Double> getYawToHub() {
-    return getDistanceToHub().get() > 0.0 ? Optional.of(allCameras[0].getYawToHub().get()) : Optional.of(0.0);
+  public double getYawToHub(Pose2d pose) {
+    // return getDistanceToHub() > 0.0 ? allCameras[0].getYawToHub().get() : 0.0;
+
+    if(getDistanceToHub(pose) > 0.0) {
+      // double x = FIELD_LAYOUT.getTagPose(getClosestCenterHubTag()).get().getX() - pose2d.getX();
+      // double y = FIELD_LAYOUT.getTagPose(getClosestCenterHubTag()).get().getY() - pose2d.getY();
+      // return (Math.atan(x/y) + 360) % 360;
+
+      return pose2d.getRotation().getDegrees() - getHubCenterPose2d().getRotation().getDegrees();
+    }
+
+    return 0.0;
   }
 
   //Puts data for vision on Elastic
@@ -414,12 +487,16 @@ public class PhotonVision extends SubsystemBase {
     builder.addDoubleProperty("Right Robot Camera Ambiguity", () -> allCameras[1].getPoseAmbiguity().get(), null);
     builder.addDoubleProperty("Left Robot Camera Ambiguity", () -> allCameras[2].getPoseAmbiguity().get(), null);
     builder.addDoubleProperty("Back Robot Camera Ambiguity", () -> allCameras[3].getPoseAmbiguity().get(), null);
-    builder.addDoubleProperty("Distance to Hub", () -> getDistanceToHub().get(), null);
-    builder.addDoubleProperty("Yaw to Hub", () -> getYawToHub().get(), null);
+    builder.addDoubleProperty("Distance to Hub", () -> getDistanceToHub(getRobotPose2d().get()), null);
+    builder.addDoubleProperty("Yaw to Hub", () -> getYawToHub(getRobotPose2d().get()), null);
     builder.addDoubleProperty("Tracked Hub Tag ID", () -> allCameras[0].getTrackedHubTag().get().getFiducialId(), null);
     builder.addDoubleProperty("Turret X", () -> getTurretPose2d().get().getX(), null);
     builder.addDoubleProperty("Turret Y", () -> getTurretPose2d().get().getY(), null);
     builder.addDoubleProperty("Robot Voltage", () -> RobotController.getBatteryVoltage(), null);
+    builder.addDoubleProperty("Closest Hub Tag ID", () -> getClosestCenterHubTag(), null);
+    builder.addDoubleProperty("Center of Hub X", () -> getHubCenterPose2d().getX(), null);
+    builder.addDoubleProperty("Center of Hub Y", () -> getHubCenterPose2d().getY(), null);
+    builder.addDoubleProperty("Center of Hub Rotation", () -> getHubCenterPose2d().getRotation().getRadians(), null);
     SmartDashboard.putData(field);
   }
 
@@ -429,8 +506,8 @@ public class PhotonVision extends SubsystemBase {
     updatePose3d();
     updateTurretPose2d();
     
-    getDistanceToHub();
-    getYawToHub();
+    getDistanceToHub(getRobotPose2d().get());
+    getYawToHub(getRobotPose2d().get());
 
     setPose2d(getRobotPose2d().get());
 
