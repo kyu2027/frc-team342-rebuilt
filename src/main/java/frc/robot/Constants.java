@@ -10,8 +10,12 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+
 import java.util.List;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -46,7 +50,7 @@ public final class Constants {
     public static final Translation3d TURRET_CAMERA_TRANSLATION_3D = new Translation3d(0, 0, 0); //zero, because it's not used for pose estimation (and it's changing constantly if turret is moving)
     public static final Translation3d ROBOT_RIGHT_CAMERA_TRANSLATION_3D = new Translation3d(0.314, -0.314, 0.629);
     public static final Translation3d ROBOT_LEFT_CAMERA_TRANSLATION_3D = new Translation3d(0.314, 0.314, 0.629);
-    public static final Translation3d ROBOT_BACK_CAMERA_TRANSLATION_3D = new Translation3d(-0.296, -0.046, 0.492);
+    public static final Translation3d ROBOT_BACK_CAMERA_TRANSLATION_3D = new Translation3d(-0.278544, 0.033655, 0.492); //-0.296, -0.046
 
     public static final Rotation3d TURRET_CAMERA_ROTATION_3D = new Rotation3d(0, 0, 0); //zero, because it's not used for pose estimation (and it's changing constantly if turret is moving)
     public static final Rotation3d ROBOT_RIGHT_CAMERA_ROTATION_3D = new Rotation3d(Math.PI/2, -1.023, -0.785);
@@ -112,6 +116,11 @@ public final class Constants {
       new PIDConstants(1.2, 0, 0.55)
     );
 
+    public static final double FL_OFFSET = 0.0;
+    public static final double FR_OFFSET = 0.0;
+    public static final double BL_OFFSET = 0.0;
+    public static final double BR_OFFSET = 0.0;
+
     //NavX angle adjustment (degrees)
     public static final double NAVX_OFFSET = 0;
   }
@@ -137,7 +146,6 @@ public final class Constants {
   public static class IntakeConstants{
     public static final int INTAKE_ID = 13;
     public static final int WRIST_ID = 14;
-    public static final int WRIST_ENCODER_ID = 0;
     
     public static final double WRIST_GEAR_RATIO = 25.0;
     public static final double WRIST_POSITION_CONVERSION_FACTOR = (2*Math.PI) / WRIST_GEAR_RATIO;

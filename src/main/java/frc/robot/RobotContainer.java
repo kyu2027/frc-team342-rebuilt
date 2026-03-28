@@ -170,7 +170,8 @@ public class RobotContainer {
     swere.setDefaultCommand(driveWithJoystick);
     turret.setDefaultCommand(Commands.run(() -> turret.manualTurret(operator), turret));
     // turret.setDefaultCommand(turretToAngle);
-    intake.setDefaultCommand(moveWristWithJoystick);
+    // turret.setDefaultCommand(Commands.run(() -> turret.trackPose(photonVision.getHubCenterPose2d(), operator), turret));
+    // intake.setDefaultCommand(moveWristWithJoystick);
     spindexer.setDefaultCommand(spindexer.runSpindexer());
 
     SmartDashboard.putData(swere);

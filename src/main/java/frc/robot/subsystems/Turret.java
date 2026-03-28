@@ -81,11 +81,11 @@ public class Turret extends SubsystemBase {
   //   double yDistance = pose.getY() - vision.getTurretPose2d().get().getY();
   //   double xDistance = pose.getX() - vision.getTurretPose2d().get().getX();
 
-  //   Rotation2d fieldRelativeAngle = Rotation2d.fromRadians(Math.atan2(yDistance, xDistance));
-  //   Rotation2d robotRelativeAngle = fieldRelativeAngle.minus(vision.getRobotPose2d().get().getRotation());
+  //   Rotation2d angleToTarget = Rotation2d.fromRadians(Math.atan2(yDistance, xDistance));
+  //   Rotation2d desiredTurretAngle = -(angleToTarget.minus(vision.getRobotPose2d().get().getRotation()) + 180);
 
   //   if(!manual){
-	// 		double safeGoal = MathUtil.clamp(robotRelativeAngle.getDegrees(), TURRET_MIN_ANGLE, TURRET_MAX_ANGLE);
+	// 		double safeGoal = MathUtil.clamp(desiredTurretAngle.getDegrees(), TURRET_MIN_ANGLE, TURRET_MAX_ANGLE);
 	// 		if(turretEncoder.getPosition() < -40) {
 	// 			turretController.setSetpoint(safeGoal, ControlType.kPosition, ClosedLoopSlot.kSlot1);
 	// 		}else if(turretEncoder.getPosition() > safeGoal) {
