@@ -126,31 +126,13 @@ public class Shooter extends SubsystemBase {
     bottomShooterMap = new InterpolatingDoubleTreeMap();
     flightTimeMap = new InterpolatingDoubleTreeMap();
 
-    put(1.5795869380667578, 8.265 - 0.45, 8.735 - 0.45);
-    put(1.9252849702151729, 8.365 - 0.025, 8.835 - 0.025);
-    // put(2.0, 8.77760987417, 9.30958623014);
-    put(2.159714161664487, 8.79 - 0.425, 9.26 - 0.425);
-    put(2.5729031307368464, 9.46 - 0.4, 9.77 - 0.4);
-    put(2.7974383174127144, 9.5 - 0.25, 9.78 - 0.25);
-    // put(3.0, 9.97455667515, 10.1075507641);
-    put(3.102963547816569, 10.05 - 0.2, 10.1 - 0.2);
-    put(3.684626975998755, 10.15 - 0.2, 10.1 - 0.2);
-    // put(3.9429684610643747, )
-    // put(4.0, 10.7725212092, 10.1075507641);
-    put(4.141048999496158, 10.11 - 0.1, 10.18 - 0.1);
-    // put(5.0, 12.7674325442, 10.1075507641);
-    put(5.560794830193121, 11.5 - 0.1, 10.8 - 0.1);
-    put(5.835646600423712, 11.7 - 0.1, 11 - 0.1);
+    mapShooterVelocities();
 
-    // flightTimeMap.put(2.0, 1.51425750824); //Bad calculator values
-    flightTimeMap.put(2.125070162186267, 1.0633 - 0.225); //1; j: 1.05; d: 1.09 ; k: 1.05; mean: 1.0633
-    flightTimeMap.put(2.285342474424601, 1.073 - 0.225); //4; j: 1.0; d: 1.02 ; k: 1.073; mean: 1.031
-    flightTimeMap.put(2.755924648570551, 1.1593 - 0.225); //5; j: 1.16; d: ; k: 1.1586; mean: 1.1593 TODO: get Dylan's reading
-    // flightTimeMap.put(3.0, 1.71724296687); //Bad calculator values
-    flightTimeMap.put(3.064996018406718, 1.2172 - 0.225); //3; j: 1.2; d: 1.23 ; k: 1.2217; mean: 1.2172
-    flightTimeMap.put(3.5764151871506438, 1.283 - 0.225); //2; j: 1.26; d: 1.286 ; k: 1.303; mean: 1.283
-    // flightTimeMap.put(4.0, 1.79716732553); //Bad calulator values
-    // flightTimeMap.put(5.0, 1.99467862423); //Bad calculator values
+    flightTimeMap.put(2.125070162186267, 0.8383);
+    flightTimeMap.put(2.285342474424601, 0.848);
+    flightTimeMap.put(2.755924648570551, 0.9343);
+    flightTimeMap.put(3.064996018406718, 0.9922);
+    flightTimeMap.put(3.5764151871506438, 1.058);
 
     this.spindexer = spindexer;
     spindexer.setShooting(false);
@@ -328,6 +310,28 @@ public class Shooter extends SubsystemBase {
     bottomShooterMap.put(meters, bottomVelocity);
   }
 
+  /** Puts the shooter velocity points into the velocity interpolation map*/
+  public void mapShooterVelocities(){
+    put(1.5795869380667578, 7.815,8.285);
+    put(1.9252849702151729, 8.34, 8.81);
+    put(2.159714161664487, 8.365, 8.835);
+    put(2.5729031307368464, 9.06, 9.37);
+    put(2.7974383174127144, 9.25, 9.53);
+    put(3.102963547816569, 9.85, 9.9);
+    put(3.684626975998755, 9.95, 9.9);
+    put(4.141048999496158, 10.01, 10.08);
+    put(5.560794830193121, 11.4, 10.7);
+    put(5.835646600423712, 11.6, 10.9);
+  }
+  /**Puts shooter flight time points into the flight time interpolation map*/
+  public void mapShooterFlightTimes(){
+    flightTimeMap.put(2.125070162186267, 0.8383);
+    flightTimeMap.put(2.285342474424601, 0.848);
+    flightTimeMap.put(2.755924648570551, 0.9343);
+    flightTimeMap.put(3.064996018406718, 0.9922);
+    flightTimeMap.put(3.5764151871506438, 1.058);
+  }
+
   /**Sets the target velocity (in m/s) of both shooter motors based on distance from the hub.
    * Target velocities are obtained via interpolation.
    * Spins the spindexer and feeder as well.
@@ -340,7 +344,6 @@ public class Shooter extends SubsystemBase {
     bottomShooterPID.setSetpoint(getBottomTargetVelocity(photonVision.getDistanceToHub(pose)), ControlType.kVelocity);
     feed(speed);
     spindexer.setShooting(true);
-    spindexer.setAtDesiredSpeed(topShooterPID.isAtSetpoint() && bottomShooterPID.isAtSetpoint());
   }
 
   /**Sets the target velocity of both shooter motors to the given velocity.
@@ -355,7 +358,6 @@ public class Shooter extends SubsystemBase {
     bottomShooterPID.setSetpoint(bottomShooterSpeed, ControlType.kVelocity);
     feed(feederSpeed);
     spindexer.setShooting(true);
-    spindexer.setAtDesiredSpeed(topShooterPID.isAtSetpoint() && bottomShooterPID.isAtSetpoint());
   }
 
   /**Sets both shooter motors to the given speed.
