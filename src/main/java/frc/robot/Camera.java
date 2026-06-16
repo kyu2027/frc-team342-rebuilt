@@ -7,10 +7,17 @@ import static frc.robot.Constants.VisionConstants.*;
 import frc.robot.AprilTagIDs.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -28,6 +35,9 @@ public class Camera {
     private PhotonTrackedTarget trackedHubTag;
     private boolean currentlyTrackingHub;
     private double timestamp;
+    private Matrix<N3, N3> cameraIntrinsics;
+    private Matrix<N8, N1> distortionCoefficients;
+    private Matrix<N3, N1> visionStandardDeviations;
 
     /**
      * Creates a new Camera.
@@ -45,13 +55,14 @@ public class Camera {
         currentlyTrackingHub = false;
 
         timestamp = 0.0;
+        visionStandardDeviations = VecBuilder.fill(0.5, 0.5, Double.MAX_VALUE);
     }
 
     /**Updates the pose3d of the robot.
      * If present, a multi-tag pose is used;
      * otherwise, the lowest ambiguity pose is used.
      */
-    public void updateRobotPose() {
+    public void updateRobotPose(Rotation3d heading) {
         cameraResults = camera.getAllUnreadResults();
 
         for(PhotonPipelineResult result : cameraResults) {
@@ -63,11 +74,119 @@ public class Camera {
                 if(!estimatedPose.isPresent()) {
                     continue;
                 }
+
+                timestamp = estimatedPose.get().timestampSeconds;
+                pose = estimatedPose.get().estimatedPose;
+                visionStandardDeviations = calculateVisionStandardDeviations(pose, getTagsSeen());
             }
+
+            poseEstimator.addHeadingData(estimatedPose.get().timestampSeconds, heading);
+
+            Optional<EstimatedRobotPose> constrainedPose = poseEstimator.estimateConstrainedSolvepnpPose(result, cameraIntrinsics, distortionCoefficients, estimatedPose.get().estimatedPose, true, 0);
+
+            if(!constrainedPose.isPresent()) {
+                continue;
+            }
+
+            timestamp = constrainedPose.get().timestampSeconds;
+            pose = constrainedPose.get().estimatedPose;
+            visionStandardDeviations = calculateVisionStandardDeviations(pose, getTagsSeen());
 
             timestamp = estimatedPose.get().timestampSeconds;
             pose = estimatedPose.get().estimatedPose;
         }
+    }
+
+    // /**Adds heading data to the pose estimator.
+    //  * 
+    //  * @param timestamp The timestamp (in seconds) at which this method was called.
+    //  * @param heading The heading of the robot.
+    //  */
+    // public void addHeadingData(double timestamp, Rotation3d heading) {
+    //     poseEstimator.addHeadingData(timestamp, heading);
+    // }
+
+    /**Sets the camera intrinsics matrix.
+     * 
+     * @param cameraIntrinsics The camera intrinsics matrix to use.
+     */
+    public void setCameraIntrinsics(Matrix<N3, N3> cameraIntrinsics) {
+        this.cameraIntrinsics = cameraIntrinsics;
+    }
+
+    /**Sets the distortion coefficients matrix.
+     * 
+     * @param distortionCoefficients The distortion coefficients matrix to use.
+     */
+    public void setDistortionCoefficients(Matrix<N8, N1> distortionCoefficients) {
+        this.distortionCoefficients = distortionCoefficients;
+    }
+
+    /**Gets the camera intrinsics matrix of the camera.
+     * 
+     * @return The camera intrinsics.
+     */
+    public Optional<Matrix<N3, N3>> getCameraIntrinsics() {
+        return camera.getCameraMatrix();
+    }
+
+    /**Gets the distortion coefficients matrix of the camera.
+     * 
+     * @return The distortion coefficients.
+     */
+    public Optional<Matrix<N8, N1>> getDistortionCoefficients() {
+        return camera.getDistCoeffs();
+    }
+
+    /**Gets the standard deviations of the vision measurements.
+     * 
+     * @return A matrix containing the standard deviations of the vision measurements.
+     */
+    public Matrix<N3, N1> getVisionStandardDeviations() {
+        return visionStandardDeviations;
+    }
+
+    /**Calculates the standard deviations of the vision measurements.
+     * 
+     * @param pose The robot pose.
+     * @param tags The tags used for the robot pose.
+     * @return A matrix containing the standard deviations of the vision measurements.
+     */
+    public Matrix<N3, N1> calculateVisionStandardDeviations(Pose3d pose, List<PhotonTrackedTarget> tags) {
+        int numTags = 0;
+        double avgDistance = 0.0;
+
+        for(PhotonTrackedTarget tag : tags) {
+            Optional<Pose3d> tagPose = poseEstimator.getFieldTags().getTagPose(tag.getFiducialId());
+
+            if(tagPose.isEmpty()) {
+                continue;
+            }
+
+            numTags++;
+            avgDistance += tagPose.get().toPose2d()
+                .getTranslation()
+                .getDistance(pose.toPose2d().getTranslation());
+        }
+
+        if(numTags == 0) {
+            return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+        }
+
+        avgDistance /= numTags;
+        double standardDeviation;
+
+        if(numTags == 1 && avgDistance >= 4.0) {
+            standardDeviation = Double.MAX_VALUE;
+        }else if(numTags >= 2 && avgDistance >= 4.0) {
+            standardDeviation = 0.2 * (avgDistance * avgDistance);
+        }else if(numTags >= 2 && avgDistance < 4.0) {
+            standardDeviation = 0.2;
+        }else{
+            standardDeviation = 0.5 + (0.3 * (avgDistance * avgDistance));
+        }
+
+        return VecBuilder.fill(standardDeviation, standardDeviation, Double.MAX_VALUE);
     }
 
     /**Gets the pose3d of the robot.
@@ -180,7 +299,7 @@ public class Camera {
             FIELD_LAYOUT.getTagPose(tag.getFiducialId()).isPresent() && 
             tag.getPoseAmbiguity() < AMBIGUITY_CUTOFF &&
             tag.getBestCameraToTarget().getTranslation().toTranslation2d().getNorm() < TAG_CUTOFF_DISTANCE;
-        }
+    }
 
     /**Gets all tags seen by the camera.
      * 
@@ -189,7 +308,7 @@ public class Camera {
     public List<PhotonTrackedTarget> getTagsSeen() {
         tags = new ArrayList<>();
         for(PhotonPipelineResult result : cameraResults) {
-            for(PhotonTrackedTarget tag: result.getTargets()) {
+            for(PhotonTrackedTarget tag : result.getTargets()) {
                 if(tagIsUsable(tag)) {
                     tags.add(tag);
                 }

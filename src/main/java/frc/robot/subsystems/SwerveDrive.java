@@ -24,11 +24,13 @@ import frc.robot.Constants.TurretConstants;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -186,7 +188,14 @@ public class SwerveDrive extends SubsystemBase {
     );
 
 
-    swervePoseEstimator = new SwerveDrivePoseEstimator(kinematics, new Rotation2d(gyroRad()), initialModulePositions, new Pose2d());
+    swervePoseEstimator = new SwerveDrivePoseEstimator(
+      kinematics,
+      new Rotation2d(gyroRad()),
+      initialModulePositions,
+      new Pose2d(),
+      VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(10)),
+      VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30))
+    );
   }
 
   public void runCharacterization(double output) {
@@ -593,10 +602,18 @@ public class SwerveDrive extends SubsystemBase {
       
   @Override
   public void periodic() {
-    if(photonVision.tagIsPresentAcrossAllCameras()) {
-      swervePoseEstimator.addVisionMeasurement(photonVision.getRobotPose2d().get(), photonVision.getTimestampOfPose());
-    }
+    // if(photonVision.tagIsPresentAcrossAllCameras()) {
+      // photonVision.updatePose3d(new Rotation3d(new Rotation2d(gyroRad())));
+      // photonVision.updatePose2d();
 
+      swervePoseEstimator.addVisionMeasurement(
+        photonVision.getRobotPose2d().get(),
+        photonVision.getTimestampOfPose()
+        // photonVision.getVisionStandardDeviations()
+      );
+    // }
+
+    // photonVision.addHeadingData(Timer.getFPGATimestamp(), new Rotation3d(new Rotation2d(gyroRad())));
     swervePoseEstimator.updateWithTime(Timer.getFPGATimestamp(), new Rotation2d(gyroRad()), getCurrentSwerveModulePositions());
 
     field.setRobotPose(swervePoseEstimator.getEstimatedPosition());
