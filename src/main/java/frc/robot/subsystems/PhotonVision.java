@@ -10,6 +10,11 @@ import frc.robot.AprilTagIDs.*;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -21,6 +26,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.PhotonUtils;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.ArrayList;
 
 public class PhotonVision extends SubsystemBase {
@@ -39,13 +45,24 @@ public class PhotonVision extends SubsystemBase {
   private Field2d field;
 
   private double timestamp;
+  
+  private Matrix<N3, N1> visionStandardDeviations;
 
   /** Creates a new PhotonVision. */
   public PhotonVision() {
     // robotBLCamera = new Camera(ROBOT_BL_CAMERA, ROBOT_BL_CAMERA_TRANSFORM_3D);
-    robotRightCamera = new Camera(ROBOT_RIGHT_CAMERA, ROBOT_RIGHT_CAMERA_TRANSFORM_3D);
-    robotLeftCamera = new Camera(ROBOT_LEFT_CAMERA, ROBOT_LEFT_CAMERA_TRANSFORM_3D);
-    robotBackCamera = new Camera(ROBOT_BACK_CAMERA, RIGHT_BACK_CAMERA_TRANSFORM_3D);
+    robotRightCamera = new Camera(
+      ROBOT_RIGHT_CAMERA,
+      ROBOT_RIGHT_CAMERA_TRANSFORM_3D
+    );
+    robotLeftCamera = new Camera(
+      ROBOT_LEFT_CAMERA,
+      ROBOT_LEFT_CAMERA_TRANSFORM_3D
+    );
+    robotBackCamera = new Camera(
+      ROBOT_BACK_CAMERA,
+      ROBOT_BACK_CAMERA_TRANSFORM_3D
+    );
 
     allCameras = new Camera[3];
     // allCameras[0] = robotBLCamera;
@@ -58,6 +75,17 @@ public class PhotonVision extends SubsystemBase {
     turretPose2d = new Pose2d();
 
     field = new Field2d();
+
+    robotRightCamera.setCameraIntrinsics(robotRightCamera.getCameraIntrinsics().get());
+    robotRightCamera.setDistortionCoefficients(robotRightCamera.getDistortionCoefficients().get());
+
+    // robotLeftCamera.setCameraIntrinsics(robotLeftCamera.getCameraIntrinsics().get());
+    // robotLeftCamera.setDistortionCoefficients(robotLeftCamera.getDistortionCoefficients().get());
+
+    robotBackCamera.setCameraIntrinsics(robotBackCamera.getCameraIntrinsics().get());
+    robotBackCamera.setDistortionCoefficients(robotBackCamera.getDistortionCoefficients().get());
+
+    visionStandardDeviations = VecBuilder.fill(0.5, 0.5, Double.MAX_VALUE);
   }
 
   /**Returns all tags seen by all cameras.
@@ -291,21 +319,30 @@ public class PhotonVision extends SubsystemBase {
     return timestamp;
   }
 
+  /**Gets the standard deviations of the vision measurements.
+   * 
+   * @return A matrix containing the standard deviations of the vision measurements.
+   */
+  public Matrix<N3, N1> getVisionStandardDeviations() {
+    return visionStandardDeviations;
+  }
+
   /**Updates the robot pose3d using the best pose from the cameras.
    * Best pose is determined by ambiguity.
    */
-  public void updatePose3d() {
+  public void updatePose3d(Rotation3d heading) {
     Pose3d bestPose = null;
     double lowestAmbiguity = 10;
 
     for(int i = 0; i < allCameras.length; i++) {
-      allCameras[i].updateRobotPose();
+      allCameras[i].updateRobotPose(heading);
 
       if(allCameras[i].getRobotPose3d().isPresent()) {
         if(allCameras[i].getPoseAmbiguity().get() != -1 && allCameras[i].getPoseAmbiguity().get() < lowestAmbiguity) {
           bestPose = allCameras[i].getRobotPose3d().get();
           lowestAmbiguity = allCameras[i].getPoseAmbiguity().get();
           timestamp = allCameras[i].getTimestamp();
+          visionStandardDeviations = allCameras[i].getVisionStandardDeviations();
         }
       }
     }
@@ -316,6 +353,17 @@ public class PhotonVision extends SubsystemBase {
       pose3d = bestPose;
     }
   }
+
+  // /**Adds heading data to the pose estimator for each camera.
+  //  * 
+  //  * @param timestamp The timestamp (in seconds) of when the method is called.
+  //  * @param heading The heading of the robot.
+  //  */
+  // public void addHeadingData(double timestamp, Rotation3d heading) {
+  //   for(int i = 0; i < allCameras.length; i++) {
+  //     allCameras[i].addHeadingData(timestamp, heading);
+  //   }
+  // }
 
   /**Updates the robot pose2d using the robot pose3d.
    * 
@@ -406,11 +454,11 @@ public class PhotonVision extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    updatePose3d();
-    updatePose2d();
+    // updatePose3d();
+    // updatePose2d();
     
-    getDistanceToHub(getTurretPose2d().get());
+    // getDistanceToHub(getTurretPose2d().get());
 
-    field.setRobotPose(pose2d);
+    // field.setRobotPose(pose2d);
   }
 }

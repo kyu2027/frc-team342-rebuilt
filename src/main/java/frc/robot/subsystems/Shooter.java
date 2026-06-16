@@ -60,15 +60,14 @@ public class Shooter extends SubsystemBase {
 
   private SysIdRoutine topShooterSysIDRoutine;
   private SysIdRoutine bottomShooterSysIDRoutine;
-
-  private boolean isShooting;
+  
   /** Creates a new Shooter. */
   public Shooter(PhotonVision photonVision) {
     topShooterMotor = new SparkFlex(TOP_SHOOTER_MOTOR_ID, MotorType.kBrushless);
     bottomShooterMotor =  new SparkFlex(BOTTOM_SHOOTER_MOTOR_ID, MotorType.kBrushless);
     bottomFeederMotor = new SparkFlex(BOTTOM_FEEDER_MOTOR_ID, MotorType.kBrushless);
     topFeederMotor = new SparkFlex(TOP_FEEDER_MOTOR_ID, MotorType.kBrushless);
-    spindexerMotor = new SparkFlex(SPINDEXER_ID, null);
+    spindexerMotor = new SparkFlex(SPINDEXER_ID, MotorType.kBrushless);
 
     topShooterEncoder = topShooterMotor.getEncoder();
     bottomShooterEncoder = bottomShooterMotor.getEncoder();
@@ -134,8 +133,6 @@ public class Shooter extends SubsystemBase {
 
     mapShooterVelocities();
     mapShooterFlightTimes();
-
-    isShooting = false;
 
     this.photonVision = photonVision;
 
@@ -299,6 +296,14 @@ public class Shooter extends SubsystemBase {
     );
   }
 
+  public double getTopRegressionVelocity(double meters) {
+    return (0.0704391 * Math.pow(meters, 3)) - (0.837868 * Math.pow(meters, 2)) + (3.90859 * meters) + (3.37434);
+  }
+
+  public double getBottomRegressionVelocity(double meters) {
+    return (0.0622992 * Math.pow(meters, 3)) - (0.779655 * Math.pow(meters, 2)) + (3.55058 * meters) + (4.34844);
+  }
+
   /**Adds a new entry into the top and bottom shooter interpolation maps.
    * 
    * @param meters The distance (in meters) from the hub.
@@ -341,10 +346,13 @@ public class Shooter extends SubsystemBase {
    */
   public Command shootWithDistance(double speed, Pose2d pose) {
     return Commands.parallel(
-      run(() -> topShooterPID.setSetpoint(getTopTargetVelocity(photonVision.getDistanceToHub(pose)), ControlType.kVelocity)),
-      run(() -> bottomShooterPID.setSetpoint(getBottomTargetVelocity(photonVision.getDistanceToHub(pose)), ControlType.kVelocity)),
-      run(() -> feed(speed)),
-      new WaitCommand(1).andThen(() -> spinSpindexer())
+      Commands.run(() -> topShooterPID.setSetpoint(getTopTargetVelocity(photonVision.getDistanceToHub(pose)), ControlType.kVelocity)),
+      Commands.run(() -> bottomShooterPID.setSetpoint(getBottomTargetVelocity(photonVision.getDistanceToHub(pose)), ControlType.kVelocity)),
+      Commands.run(() -> feed(speed)),
+      Commands.sequence(
+        new WaitCommand(1),
+        Commands.run(() -> spinSpindexer())
+      )
     );
   }
 
@@ -357,10 +365,13 @@ public class Shooter extends SubsystemBase {
    */
   public Command shootWithSpeed(double topShooterSpeed, double bottomShooterSpeed, double feederSpeed) {
     return Commands.parallel(
-      run(() -> topShooterPID.setSetpoint(topShooterSpeed, ControlType.kVelocity)),
-      run(() -> bottomShooterPID.setSetpoint(bottomShooterSpeed, ControlType.kVelocity)),
-      run(() -> feed(feederSpeed)),
-      new WaitCommand(1).andThen(() -> spinSpindexer())
+      Commands.run(() -> topShooterPID.setSetpoint(topShooterSpeed, ControlType.kVelocity)),
+      Commands.run(() -> bottomShooterPID.setSetpoint(bottomShooterSpeed, ControlType.kVelocity)),
+      Commands.run(() -> feed(feederSpeed)),
+      Commands.sequence(
+        new WaitCommand(1),
+        Commands.run(() -> spinSpindexer())
+      )
     );
   }
 
@@ -374,10 +385,13 @@ public class Shooter extends SubsystemBase {
    */
   public Command shootWithoutPID(double topShooterSpeed, double bottomShooterSpeed, double feederSpeed) {
     return Commands.parallel(
-      run(() -> topShooterMotor.set(topShooterSpeed)),
-      run(() -> bottomShooterMotor.set(bottomShooterSpeed)),
-      run(() -> feed(feederSpeed)),
-      new WaitCommand(1).andThen(() -> spinSpindexer())
+      Commands.run(() -> topShooterMotor.set(topShooterSpeed)),
+      Commands.run(() -> bottomShooterMotor.set(bottomShooterSpeed)),
+      Commands.run(() -> feed(feederSpeed)),
+      Commands.sequence(
+        new WaitCommand(1),
+        Commands.run(() -> spinSpindexer())
+      )
     );
   }
 
@@ -415,12 +429,7 @@ public class Shooter extends SubsystemBase {
 
   /** Spins the spindexer if the shooter is running.*/
   public void spinSpindexer(){
-    if(isShooting) {
-      spindexerMotor.set(0.6);
-    }
-    else{
-      spindexerMotor.set(0);
-    }
+    spindexerMotor.set(0.6);
   }
 
   /**Spins the spindexer at a set speed.

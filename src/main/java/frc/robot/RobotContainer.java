@@ -98,9 +98,9 @@ public class RobotContainer {
       Commands.runEnd(() -> shooter.feed(-0.9), () -> shooter.feed(0), shooter),
       Commands.runEnd(() -> shooter.SpindexerWithSpeed(-0.65), () -> shooter.SpindexerWithSpeed(0))
     );
-    shootWhileMoving = Commands.runEnd(() -> shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]), () -> shooter.stopShooterAndFeeder(), shooter);
-
+    shootWhileMoving = shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]);
     driveWithJoystick = new DriveWithJoystick(swere, driver);
+
     fieldOrientedButton = new JoystickButton(driver, XboxController.Button.kA.value);
     toggleDriveAssistButton = new JoystickButton(driver, XboxController.Button.kB.value);
     shootButton = new JoystickButton(operator, XboxController.Button.kRightBumper.value);
@@ -178,7 +178,7 @@ public class RobotContainer {
     toggleDriveAssistButton.onTrue(toggleDriveAssist); // 'B' button
     toggleWristButton.onTrue(toggleWristManual); // 'Left Joystick' button
     shootButton.whileTrue(shootWhileMoving);
-    shootButton.onFalse(Commands.run(() -> shooter.stopShooterAndFeeder()));
+    shootButton.onFalse(Commands.runOnce(() -> shooter.stopShooterAndFeeder(), shooter));
     leftSideTurretTurnButton.onTrue(Commands.run(() -> turret.turnTurret(-90), turret));
     rightSideTurretTurnButton.onTrue(Commands.run(() -> turret.turnTurret(90), turret));
     straightAheadTurretButton.onTrue(Commands.run(() -> turret.turnTurret(0), turret));
