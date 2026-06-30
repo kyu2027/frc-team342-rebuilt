@@ -98,15 +98,16 @@ public class SwerveDrive extends SubsystemBase {
       DriveConstants.FL_DIAMETER
     );
   
-    frontRightModule = new SwerveModule(
-      DriveConstants.FRONT_RIGHT_DRIVE_ID, 
-      DriveConstants.FRONT_RIGHT_ROTATE_ID, 
-      DriveConstants.FRONT_LEFT_CANCODER_ID, 
-      false, 
-      true, 
-      "FR",
-      DriveConstants.FR_DIAMETER
-    );
+          frontRightModule = new SwerveModule(
+          DriveConstants.FRONT_RIGHT_DRIVE_ID, 
+          DriveConstants.FRONT_RIGHT_ROTATE_ID, 
+          DriveConstants.FRONT_RIGHT_CANCODER_ID, 
+
+          false, true, 
+          "FR",
+          DriveConstants.FR_DIAMETER
+
+          );
   
     backLeftModule = new SwerveModule(
       DriveConstants.BACK_LEFT_DRIVE_ID, 

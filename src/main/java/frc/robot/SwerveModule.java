@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.*;
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -115,24 +116,24 @@ public class SwerveModule {
         /* Initializes the Analog Input and Analog Encoder. Analog Encoder acts as the absoulete encoder  */
         rotateAbsoluteEncoder = new CANcoder(CANCoderPort);
 
-        // rotateAbsoluteEncoderConfig = new CANcoderConfiguration();
+        rotateAbsoluteEncoderConfig = new CANcoderConfiguration();
 
-        // switch(CANCoderPort) {
-        //  case DriveConstants.FRONT_LEFT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.FL_OFFSET;
-				// 	case DriveConstants.FRONT_RIGHT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.FR_OFFSET;
-				// 	case DriveConstants.BACK_LEFT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.BL_OFFSET;
-				// 	case DriveConstants.BACK_RIGHT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.BR_OFFSET;
-        // }
+        switch(CANCoderPort) {
+         case DriveConstants.FRONT_LEFT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.FL_OFFSET;
+					case DriveConstants.FRONT_RIGHT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.FR_OFFSET;
+					case DriveConstants.BACK_LEFT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.BL_OFFSET;
+					case DriveConstants.BACK_RIGHT_CANCODER_ID -> rotateAbsoluteEncoderConfig.MagnetSensor.MagnetOffset = DriveConstants.BR_OFFSET;
+        }
 
-        // rotateAbsoluteEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
-				// rotateAbsoluteEncoderConfig.MagnetSensor.withAbsoluteSensorDiscontinuityPoint(0.5);
+        rotateAbsoluteEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+				rotateAbsoluteEncoderConfig.MagnetSensor.withAbsoluteSensorDiscontinuityPoint(0.5);
 
-				// rotateAbsoluteEncoder.getConfigurator().apply(rotateAbsoluteEncoderConfig);
+				rotateAbsoluteEncoder.getConfigurator().apply(rotateAbsoluteEncoderConfig);
 
         swerveModuleState = new SwerveModuleState();
 
         syncEncoders();
-        // initSwerveState();
+        initSwerveState();
     }
 
     public void runCharacterization(double output) {
@@ -205,9 +206,9 @@ public class SwerveModule {
 
     public void initSwerveState() {
         // rotateController.setSetpoint(0, ControlType.kPosition, ClosedLoopSlot.kSlot1);
-        rotateController.setSetpoint(0, ControlType.kPosition);
+        // rotateController.setSetpoint(0, ControlType.kPosition);
 
-				// setState(new SwerveModuleState(0.0, new Rotation2d(absoluteRotatePosition())));
+				setState(new SwerveModuleState(0.0, new Rotation2d(absoluteRotatePosition())));
     }
 
     /* Sets both motors too 0 */
