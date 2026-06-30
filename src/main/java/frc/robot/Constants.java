@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static frc.robot.Constants.TurretConstants.TURRET_MAX_ACCELERATION;
+
 import org.ejml.simple.SimpleMatrix;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -18,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
@@ -128,8 +131,15 @@ public final class Constants {
 
   public static class TurretConstants{
     public static final int TURRET_ID = 17;
+
     public static final double[] TURRET_PID_VALUES_SLOT0 = {0.005, 0, 0};
     public static final double[] TURRET_PID_VALUES_SLOT1 = {0.04, 0, 0.01};
+    public static final double[] TURRET_SVA_VALUES = {0.0, 0.0, 0.0};
+
+    public static final double TURRET_MAX_VELOCITY = 200; //In degrees per second
+    public static final double TURRET_MAX_ACCELERATION = 1000; //In degrees per second^2
+
+    public static final Constraints TURRET_CONSTRAINTS = new Constraints(TURRET_MAX_VELOCITY, TURRET_MAX_ACCELERATION);
 
     public static final double TURRET_MIN_ANGLE = -90;
     public static final double TURRET_MAX_ANGLE = 160.0;
