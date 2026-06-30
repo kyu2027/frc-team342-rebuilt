@@ -132,18 +132,19 @@ public class RobotContainer {
     autoChooser.addOption("Top Shooter Sys ID", Autos.topShooterSysID(shooter));
     autoChooser.addOption("Bottom Shooter Sys ID", Autos.bottomShooterSysID(shooter));
     autoChooser.addOption("Swerve Sys ID", Autos.swerveSysID(swere));
+    autoChooser.addOption("Turret Sys ID", Autos.turretSysID(turret));
     autoChooser.addOption("Basic Center Auto", Autos.basicCenterAuto(swere, shooter,intake));
     autoChooser.addOption("Basic Left Auto", Autos.basicLeftAuto(swere, shooter));
     autoChooser.addOption("Basic Right Auto", Autos.basicRightAuto(swere, shooter));
     autoChooser.addOption("Right Outpost Shoot", Autos.rightOutpostShoot(swere, shooter));
-    autoChooser.addOption("Basic Right Turret Auto", Autos.basicRightTurretAuto(swere, shooter, turret, photonVision, operator));
+    autoChooser.addOption("Basic Right Turret Auto", Autos.basicRightTurretAuto(swere, shooter, turret, photonVision));
     autoChooser.addOption("Right Neutral Zone Auto", Autos.rightNeutralZoneAuto(swere, shooter, turret, photonVision, intake, operator));
     autoChooser.addOption("Straight Line Auto", Autos.straightLineAuto(swere));
-    autoChooser.addOption("Basic Left Turret Auto", Autos.basicLeftTurretAuto(swere, shooter, turret, photonVision, operator));
+    autoChooser.addOption("Basic Left Turret Auto", Autos.basicLeftTurretAuto(swere, shooter, turret, photonVision));
     autoChooser.addOption("Depot Auto", Autos.depotAuto(swere, shooter, turret, photonVision, intake, operator));
     
     swere.setDefaultCommand(driveWithJoystick);
-    turret.setDefaultCommand(Commands.run(() -> turret.trackLookAheadPose(photonVision.getHubCenterPose2d()), turret));
+    // turret.setDefaultCommand(Commands.run(() -> turret.trackLookAheadPose(photonVision.getHubCenterPose2d()), turret));
 
     SmartDashboard.putData(swere);
     SmartDashboard.putData(turret);
