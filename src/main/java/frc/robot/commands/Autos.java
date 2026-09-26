@@ -146,8 +146,8 @@ public final class Autos {
     );
   }
 
-  /**Runs a right side neutral zone auto. It turns the turret and shoots into the hub and then
-   * backs up before going over the bump. It intakes, then moves back over the bump. It then
+  /**Runs a right side neutral zone auto. It backs up before going over the bump.
+   * It intakes, then moves back over the bump. It then
    * turns the robot, turns the turret, and shoots into the hub.
    * 
    * @param swerve The swerve subsystem.
@@ -165,22 +165,78 @@ public final class Autos {
       //   Commands.run(() -> turret.turnTurret(180 - (MathUtil.inputModulus(Math.atan2((vision.getHubCenterPose2d().getY() - swerve.getPose2d().getY()), (vision.getHubCenterPose2d().getX() - swerve.getPose2d().getX())), -180, 180)))).withTimeout(1.0),
       //   Commands.runEnd(() -> shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]), () -> shooter.stopShooterAndFeeder(), shooter).alongWith(shooter.delayedSpinSpindexer()).withTimeout(3)
       // ),
-      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(-1.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(1.0),
-      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(5.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(1.6),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(-2.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(0.5),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(5.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(1.9),
       Commands.parallel(
         Commands.sequence(
           Commands.run(() -> intake.wristToPosition(WRIST_DOWN_POSITION, controller), intake).withTimeout(0.5),
           Commands.parallel(
-            Commands.runEnd(() -> intake.spinIntake(-1.0), () -> intake.stopIntake()).withTimeout(6.0),
-            Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(0.5, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(6.0)
+            Commands.runEnd(() -> intake.spinIntake(-1.0), () -> intake.stopIntake()).withTimeout(3.75),
+            Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(0.6, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(3.75)
           ),
           Commands.run(() -> intake.wristToPosition(WRIST_MIDDLE_POSITION, controller), intake).withTimeout(1.0)
         )
       ),
-      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(-5.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(2),
-      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(0.0, 0.0, Units.degreesToRadians(270)), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).until(() -> ((swerve.gyroRad() % (2 * Math.PI)) > Units.degreesToRadians(230.0) && (swerve.gyroRad() % (2 * Math.PI)) < Units.degreesToRadians(250.0))),
-      Commands.run(() -> turret.turnTurret(180 - (MathUtil.inputModulus(Math.atan2((vision.getHubCenterPose2d().getY() - swerve.getPose2d().getY()), (vision.getHubCenterPose2d().getX() - swerve.getPose2d().getX())), -180, 180)))).withTimeout(1.0),
-      Commands.runEnd(() -> shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]), () -> shooter.stopShooterAndFeeder(), shooter).alongWith(shooter.delayedSpinSpindexer()).withTimeout(3)
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(-5.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(2.15),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(0.0, 0.0, Units.degreesToRadians(360)), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve)
+        .alongWith(Commands.runEnd(() -> intake.spinIntake(-0.5), () -> intake.stopIntake()))
+        .until(() -> ((swerve.gyroRad() % (2 * Math.PI)) > Units.degreesToRadians(225.0) && (swerve.gyroRad() % (2 * Math.PI)) < Units.degreesToRadians(235.0))),
+      Commands.run(() -> turret.turnTurret(180 - (MathUtil.inputModulus(Math.atan2((vision.getHubCenterPose2d().getY() - swerve.getPose2d().getY()), (vision.getHubCenterPose2d().getX() - swerve.getPose2d().getX())), -180, 180)))).withTimeout(0.5),
+      Commands.runEnd(() -> shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]), () -> shooter.stopShooterAndFeeder(), shooter)
+        .alongWith(shooter.delayedSpinSpindexer()).withTimeout(9.0)
+    );
+  }
+
+  /**Runs a left side neutral zone auto. It backs up before going over the bump.
+   * It intakes, then moves back over the bump. It then
+   * turns the robot, turns the turret, and shoots into the hub.
+   * 
+   * @param swerve The swerve subsystem.
+   * @param shooter The shooter subsystem.
+   * @param turret The turret subsystem.
+   * @param vision The vision subsystem.
+   * @param intake The intake subsystem.
+   * @param controller The operator controller.
+   * @return A command that runs the right neutral zone auto.
+   */
+  public static Command LeftNeutralZoneAuto(SwerveDrive swerve, Shooter shooter, Turret turret, PhotonVision vision, Intake intake, CustomXboxController controller) {
+    return Commands.sequence(
+      Commands.runOnce(() -> swerve.setPose(new Pose2d(3.568, 5.536, new Rotation2d(0)))),
+      // Commands.parallel(
+      //   Commands.run(() -> turret.turnTurret(180 - (MathUtil.inputModulus(Math.atan2((vision.getHubCenterPose2d().getY() - swerve.getPose2d().getY()), (vision.getHubCenterPose2d().getX() - swerve.getPose2d().getX())), -180, 180)))).withTimeout(1.0),
+      //   Commands.runEnd(() -> shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]), () -> shooter.stopShooterAndFeeder(), shooter).alongWith(shooter.delayedSpinSpindexer()).withTimeout(3)
+      // ),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(-2.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(0.5),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(5.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(1.9),
+      Commands.parallel(
+        Commands.sequence(
+          Commands.run(() -> intake.wristToPosition(WRIST_DOWN_POSITION, controller), intake).withTimeout(0.5),
+          Commands.parallel(
+            Commands.runEnd(() -> intake.spinIntake(-1.0), () -> intake.stopIntake()).withTimeout(3.75),
+            Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(0.6, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(3.75)
+          ),
+          Commands.run(() -> intake.wristToPosition(WRIST_MIDDLE_POSITION, controller), intake).withTimeout(1.0)
+        )
+      ),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(-5.0, 0, 0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(2.15),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(0.0, 0.0, Units.degreesToRadians(360)), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve)
+        .alongWith(Commands.runEnd(() -> intake.spinIntake(-0.5), () -> intake.stopIntake()))
+        .until(() -> ((swerve.gyroRad() % (2 * Math.PI)) > Units.degreesToRadians(125.0) && (swerve.gyroRad() % (2 * Math.PI)) < Units.degreesToRadians(135.0))),
+      Commands.run(() -> turret.turnTurret(180 - (MathUtil.inputModulus(Math.atan2((vision.getHubCenterPose2d().getY() - swerve.getPose2d().getY()), (vision.getHubCenterPose2d().getX() - swerve.getPose2d().getX())), -180, 180)))).withTimeout(0.5),
+      Commands.runEnd(() -> shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]), () -> shooter.stopShooterAndFeeder(), shooter)
+        .alongWith(shooter.delayedSpinSpindexer()).withTimeout(9.0)
+    );
+  }
+
+  public static Command MiddleAuto(SwerveDrive swerve, Shooter shooter, Turret turret, PhotonVision vision, Intake intake, CustomXboxController controller) {
+    return Commands.sequence(
+      Commands.runOnce(() -> swerve.setPose(new Pose2d(3.568, 4.012, new Rotation2d(0)))),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(-1.0, 0.0, 0.0), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules(), swerve).withTimeout(2.5),
+      Commands.runEnd(() -> swerve.drive(ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(0.0, 0.0, Units.degreesToRadians(360)), new Rotation2d(swerve.gyroRad()))), () -> swerve.stopModules())
+        .until(() -> ((swerve.gyroRad() % (2 * Math.PI)) > Units.degreesToRadians(175.0) && (swerve.gyroRad() % (2 * Math.PI)) < Units.degreesToRadians(185.0))),
+      Commands.run(() -> turret.turnTurret(180 - (MathUtil.inputModulus(Math.atan2((vision.getHubCenterPose2d().getY() - swerve.getPose2d().getY()), (vision.getHubCenterPose2d().getX() - swerve.getPose2d().getX())), -180, 180)))).withTimeout(0.5),
+      Commands.runEnd(() -> shooter.shootWithDistance(1, turret.getLookAheadPoses()[1]), () -> shooter.stopShooterAndFeeder(), shooter)
+        .alongWith(shooter.delayedSpinSpindexer()).withTimeout(5.0)
     );
   }
 

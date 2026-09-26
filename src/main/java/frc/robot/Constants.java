@@ -209,7 +209,7 @@ public final class Constants {
      * and the middle position brings the wrist up to allow the robot to move around while holding fuel without
      * potentially damaging the wrist and intake mechanism.
      */
-    public static final double WRIST_DOWN_POSITION = 5.7065;
+    public static final double WRIST_DOWN_POSITION = 7.1373;
     public static final double WRIST_UP_POSITION = 0.01;
     public static final double WRIST_MIDDLE_POSITION = 2.182;
     

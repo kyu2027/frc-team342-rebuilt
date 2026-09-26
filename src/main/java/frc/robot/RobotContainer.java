@@ -169,6 +169,8 @@ public class RobotContainer {
     autoChooser.addOption("Right Outpost Shoot", Autos.rightOutpostShoot(swere, shooter));
     autoChooser.addOption("Basic Right Turret Auto", Autos.basicRightTurretAuto(swere, shooter, turret, photonVision));
     autoChooser.addOption("Right Neutral Zone Auto", Autos.rightNeutralZoneAuto(swere, shooter, turret, photonVision, intake, operator));
+    autoChooser.addOption("Left Neutral Zone Auto", Autos.LeftNeutralZoneAuto(swere, shooter, turret, photonVision, intake, operator));
+    autoChooser.addOption("Middle Auto", Autos.MiddleAuto(swere, shooter, turret, photonVision, intake, operator));
     autoChooser.addOption("Straight Line Auto", Autos.straightLineAuto(swere));
     autoChooser.addOption("Basic Left Turret Auto", Autos.basicLeftTurretAuto(swere, shooter, turret, photonVision));
     autoChooser.addOption("Depot Auto", Autos.depotAuto(swere, shooter, turret, photonVision, intake, operator));
